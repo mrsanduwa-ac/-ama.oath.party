@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Amaya's Oaths Party</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- GSAP for Advanced Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --navy-text: #1d254b;
+            --black-text: #1a1a1a;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #eaddcd;
+            scroll-behavior: smooth;
+        }
+
+        /* Background Texture */
+        .bg-texture {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #eaddcd; /* Fallback color */
+            background-image: url('./background.jpg'); /* Fixed Path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -10;
+        }
+
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        .font-script { font-family: 'Great Vibes', cursive; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-sans { font-family: 'Montserrat', sans-serif; }
+
+        .mobile-container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.15);
+            min-height: 100vh;
+            background: transparent;
+        }
+
+        /* Magic Floral Layers - Initial CSS reset, GSAP handles the rest */
+        .floral { 
+            position: fixed; 
+            z-index: 20; 
+            pointer-events: none; 
+            /* Removed opacity: 0 and transform: scale(0) from here so GSAP can control it perfectly */
+        }
+        
+        .f-top-left { top: -20px; left: -20px; width: 60%; max-width: 250px; transform-origin: top left; }
+        .f-top-right { top: -20px; right: -20px; width: 60%; max-width: 250px; transform-origin: top right; }
+        .f-mid-left { top: 40%; left: -20px; width: 55%; max-width: 220px; transform-origin: center left; }
+        .f-mid-right { top: 40%; right: -20px; width: 55%; max-width: 220px; transform-origin: center right; }
+        .f-bottom { bottom: -10px; left: 0; width: 100%; max-width: 500px; transform-origin: bottom center; }
+
+        .divider-line {
+            width: 100%;
+            height: 2px;
+            background-color: var(--black-text);
+            opacity: 0.8;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop>
+        <source src="./music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="bg-texture"></div>
+
+    <!-- Fixed Florals -->
+    <div class="mobile-container relative pointer-events-none" style="position: fixed; left: 50%; transform: translateX(-50%); height: 100vh; z-index: 20;">
+        <img src="./left.png" class="floral f-top-left" id="fl-tl" alt="">
+        <img src="./rightheader.png" class="floral f-top-right" id="fl-tr" alt="">
+        
+        <img src="./leftmidlefooter.png" class="floral f-mid-left" id="fl-ml" alt="">
+        <img src="./rightmidlefooter.png" class="floral f-mid-right" id="fl-mr" alt="">
+        
+        <img src="./footer.png" class="floral f-bottom" id="fl-b" alt="">
+    </div>
+
+    <!-- Main Content -->
+    <div class="mobile-container pb-10 relative z-10" id="scroll-container">
+        
+        <!-- SECTION 1: Statue -->
+        <section class="h-[110vh] w-full flex items-center justify-center px-6 relative" id="sec-1">
+            <div id="statue-container" class="w-full flex items-center justify-center fixed top-0 left-0 h-screen pointer-events-none z-10">
+                <img src="./logo.png" alt="Lady Justice" class="w-[85%] max-w-[400px] object-contain drop-shadow-2xl">
+            </div>
+            
+            <div class="absolute bottom-32 flex flex-col items-center opacity-70 animate-bounce z-20">
+                <span class="font-sans text-[11px] font-bold tracking-[0.3em] text-[var(--navy-text)] mb-3">SCROLL DOWN</span>
+                <i class="fa-solid fa-angles-down text-[var(--navy-text)] text-2xl"></i>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Text -->
+        <section class="relative w-full min-h-[100vh] pt-32 pb-12 px-8 text-center flex flex-col items-center z-10" id="sec-2">
+            
+            <h1 class="font-script text-[4.5rem] md:text-[5rem] text-[var(--black-text)] mb-8 gs-text drop-shadow-sm leading-none mt-10">
+                Oaths Party
+            </h1>
+
+            <p id="guest-name" class="font-serif text-2xl font-semibold text-[var(--black-text)] mb-3 gs-text min-h-[30px] border-b border-[var(--black-text)] pb-2 px-4">
+                Mr. Inviter Name
+            </p>
+            
+            <p class="font-serif text-[var(--black-text)] text-lg mb-1 gs-text mt-4">You are cordially invited</p>
+            <p class="font-serif text-[var(--black-text)] text-lg mb-10 gs-text">to celebrate the Enrollment of</p>
+
+            <h2 class="font-script text-[4rem] md:text-[4.5rem] leading-[1.1] text-[var(--navy-text)] mb-10 gs-text" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+                Amaya Muhandiramge
+            </h2>
+
+            <p class="font-serif text-[var(--black-text)] text-lg gs-text">as an Attorney-at-Law</p>
+            <p class="font-serif text-[var(--black-text)] text-lg gs-text mb-16">of the Supreme Court of Sri Lanka</p>
+            
+        </section>
+
+        <!-- SECTION 3: Details & RSVP -->
+        <section class="relative w-full min-h-screen pt-12 pb-10 px-8 text-center flex flex-col items-center z-10" id="sec-3">
+            
+            <!-- Icons -->
+            <div class="flex items-center justify-center gap-10 mb-8 gs-text text-[var(--navy-text)] opacity-90">
+                <i class="fa-solid fa-bell-concierge text-4xl"></i>
+                <div class="w-[2px] h-12 bg-black opacity-80"></div>
+                <i class="fa-solid fa-champagne-glasses text-4xl"></i>
+            </div>
+
+            <p class="font-serif text-[var(--black-text)] text-xl leading-relaxed mb-6 gs-text font-medium px-2">
+                Join us for an evening of joyous celebration<br>dinner, and fellowship<br>to mark this momentous milestone.
+            </p>
+
+            <!-- Map & Date -->
+            <div class="w-full mt-4 mb-6 gs-text relative">
+                <div class="divider-line"></div>
+                <div class="flex items-center justify-between py-2">
+                    <div class="text-left flex-1 border-r-2 border-black pr-4">
+                        <p class="font-serif text-[var(--black-text)] text-[1.1rem] md:text-xl font-semibold mb-3">Friday 10<sup>th</sup> of July 2026</p>
+                        <div class="w-full h-[2px] bg-black opacity-80 mb-3"></div>
+                        <p class="font-serif text-[var(--black-text)] text-[1.1rem] md:text-xl font-semibold">Time: 6:00 PM onwards</p>
+                    </div>
+                    <a href="https://maps.app.goo.gl/r6s2sJ2697xUo5oB7" target="_blank" class="pl-4 pb-2 z-50 relative pointer-events-auto">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Google_Maps_icon_%282020%29.svg/512px-Google_Maps_icon_%282020%29.svg.png" alt="Map" class="w-16 h-16 object-contain hover:scale-110 transition-transform drop-shadow-md">
+                    </a>
+                </div>
+                <div class="divider-line"></div>
+            </div>
+
+            <p class="font-serif text-[var(--black-text)] text-xl font-bold gs-text mb-12">
+                Venue: Sundale Hotel , Divulapitiya
+            </p>
+
+            <!-- RSVP Form -->
+            <form id="rsvp-form" class="w-full bg-white/60 backdrop-blur-md rounded-[2rem] p-6 shadow-sm border border-white gs-text relative z-30 mb-8 pointer-events-auto">
+                
+                <input type="text" id="wish-message" placeholder="ADD ANY TEXT OR WISH" class="w-full bg-transparent text-center font-serif text-sm tracking-widest text-[var(--navy-text)] focus:outline-none py-2 mb-6 uppercase placeholder:text-[var(--navy-text)] border-b border-transparent focus:border-[var(--navy-text)] transition-colors">
+                
+                <div class="flex gap-4 justify-center mb-6 text-sm">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="attendance" value="Attending" class="peer sr-only" required>
+                        <span class="px-4 py-2 rounded-full border border-[var(--navy-text)] text-[var(--navy-text)] peer-checked:bg-[var(--navy-text)] peer-checked:text-white transition-colors font-serif font-medium shadow-sm">Attending</span>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="attendance" value="Not_Attending" class="peer sr-only">
+                        <span class="px-4 py-2 rounded-full border border-[var(--navy-text)] text-[var(--navy-text)] peer-checked:bg-red-800 peer-checked:text-white peer-checked:border-red-800 transition-colors font-serif font-medium shadow-sm">Declines</span>
+                    </label>
+                </div>
+
+                <button type="submit" id="submit-btn" class="w-full bg-[#0d1b3e] text-white font-serif tracking-[0.3em] uppercase text-xl py-4 rounded-full shadow-lg hover:bg-black transition-colors">
+                    R S V P
+                </button>
+            </form>
+
+            <div id="rsvp-success" class="hidden w-full gs-text bg-white/70 p-6 rounded-[2rem] backdrop-blur-sm text-center mb-8 border border-white">
+                <i class="fa-solid fa-circle-check text-4xl text-emerald-600 mb-3"></i>
+                <p class="font-serif text-[var(--black-text)] text-xl font-medium">Thank You!</p>
+            </div>
+
+            <!-- Exact Watermark -->
+            <div class="mt-4 gs-text z-50 pb-10 pointer-events-auto">
+                <a href="https://yourwebsite.com" target="_blank" class="font-sans text-[12px] text-[var(--black-text)] font-medium tracking-wide hover:opacity-70 transition-opacity">
+                    Powerd with Craftgrid by Sandusha
+                </a>
+            </div>
+
+        </section>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi0Nti2-5JTLZ_7LI5d1ROB0JHO7wkVHWJ4Vm5fHrQPxa8ubE9HAJNwLEaNY9M3gGszA/exec';
+        const urlParams = new URLSearchParams(window.location.search);
+        const guestId = urlParams.get('id');
+
+        // --- Fetch Name (With Fallback for Local Testing) ---
+        async function fetchGuest() {
+            if (guestId) {
+                try {
+                    const res = await fetch(`${SCRIPT_URL}?action=getGuest&id=${guestId}`);
+                    const data = await res.json();
+                    if(!data.error) {
+                        document.getElementById('guest-name').innerText = `${data.title} ${data.name}`;
+                        fetch(SCRIPT_URL, {
+                            method: 'POST', mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({ action: 'updateOpened', id: guestId })
+                        });
+                    }
+                } catch(e) {
+                    console.log("CORS/Fetch error, using default name.");
+                    document.getElementById('guest-name').innerText = "Mr. Inviter Name";
+                }
+            } else {
+                // This happens when you just double-click the file without ?id= in the URL
+                document.getElementById('guest-name').innerText = "Mr. Inviter Name";
+            }
+        }
+        fetchGuest();
+
+        // --- Audio Play on First Interaction ---
+        let audioPlayed = false;
+        const audio = document.getElementById('bg-music');
+        function playAudio() {
+            if(!audioPlayed) {
+                audio.play().catch(e => {});
+                audioPlayed = true;
+            }
+        }
+        window.addEventListener('scroll', playAudio, {passive: true});
+        window.addEventListener('touchstart', playAudio, {passive: true});
+        window.addEventListener('click', playAudio, {passive: true});
+
+
+        // ==========================================
+        // SUPER AI ANIMATIONS (GSAP) - FIXED
+        // ==========================================
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Set all florals to explicitly hidden via GSAP first
+        gsap.set('.floral', { scale: 0, opacity: 0 });
+        
+        // 1. Statue Shrinks & Top Flowers Bloom IN (Scroll Section 1)
+        const tl1 = gsap.timeline({
+            scrollTrigger: { trigger: "#sec-1", start: "top top", end: "bottom top", scrub: 1 }
+        });
+        tl1.to("#statue-container", { scale: 0.3, opacity: 0, y: -150 }, 0)
+           .to("#fl-tl, #fl-tr", { scale: 1, opacity: 1, ease: "back.out(1.5)" }, 0); 
+
+        // 2. Top Flowers Fade OUT & Middle Flowers Bloom IN (Scroll Section 2)
+        const tl2 = gsap.timeline({
+            scrollTrigger: { trigger: "#sec-2", start: "top center", end: "bottom center", scrub: 1 }
+        });
+        tl2.to("#fl-tl, #fl-tr", { scale: 0.7, opacity: 0, ease: "power2.inOut" }, 0)
+           .to("#fl-ml, #fl-mr", { scale: 1, opacity: 1, ease: "back.out(1.5)" }, 0.2); 
+
+        // 3. Middle Flowers Fade OUT & Bottom Flowers Bloom IN (Scroll Section 3)
+        const tl3 = gsap.timeline({
+            scrollTrigger: { trigger: "#sec-3", start: "top center", end: "bottom bottom", scrub: 1 }
+        });
+        tl3.to("#fl-ml, #fl-mr", { scale: 0.7, opacity: 0, ease: "power2.inOut" }, 0)
+           .to("#fl-b", { scale: 1, opacity: 1, ease: "back.out(1.2)" }, 0.2); 
+
+        // 4. Text Elements Slide Up Smoothly
+        gsap.utils.toArray('.gs-text').forEach(elem => {
+            gsap.fromTo(elem, 
+                { opacity: 0, y: 50 },
+                {
+                    scrollTrigger: { trigger: elem, start: "top 95%", end: "top 60%", scrub: 0.5 },
+                    opacity: 1, y: 0
+                }
+            );
+        });
+
+        // --- RSVP Form ---
+        document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            const statusRadio = document.querySelector('input[name="attendance"]:checked');
+            
+            if(!statusRadio) { alert("Please select Attending or Declines"); return; }
+            
+            const status = statusRadio.value;
+            const message = document.getElementById('wish-message').value;
+            const idToSubmit = guestId || 'UNKNOWN';
+
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+            submitBtn.disabled = true;
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'updateRSVP', id: idToSubmit, rsvp: status, message: message })
+                });
+                
+                document.getElementById('rsvp-form').style.display = 'none';
+                document.getElementById('rsvp-success').classList.remove('hidden');
+            } catch(e) {
+                alert("Error submitting. Please try again.");
+                submitBtn.innerHTML = 'R S V P';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
