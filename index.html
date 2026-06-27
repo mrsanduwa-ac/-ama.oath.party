@@ -40,11 +40,11 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-color: #eaddcd; /* Fallback color */
-            background-image: url('./background.jpg'); /* Fixed Path */
+            background-color: #eaddcd; 
+            background-image: url('./background.jpg'); 
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
+            background-repeat: repeat;
             z-index: -10;
         }
 
@@ -63,19 +63,21 @@
             background: transparent;
         }
 
-        /* Magic Floral Layers - Initial CSS reset, GSAP handles the rest */
+        /* Magic Floral Layers */
         .floral { 
             position: fixed; 
             z-index: 20; 
             pointer-events: none; 
-            /* Removed opacity: 0 and transform: scale(0) from here so GSAP can control it perfectly */
         }
         
-        .f-top-left { top: -20px; left: -20px; width: 60%; max-width: 250px; transform-origin: top left; }
-        .f-top-right { top: -20px; right: -20px; width: 60%; max-width: 250px; transform-origin: top right; }
-        .f-mid-left { top: 40%; left: -20px; width: 55%; max-width: 220px; transform-origin: center left; }
-        .f-mid-right { top: 40%; right: -20px; width: 55%; max-width: 220px; transform-origin: center right; }
-        .f-bottom { bottom: -10px; left: 0; width: 100%; max-width: 500px; transform-origin: bottom center; }
+        /* Top flowers are fully visible on load */
+        .f-top-left { top: 0; left: 0; width: 60%; max-width: 250px; transform-origin: top left; opacity: 1; transform: scale(1); }
+        .f-top-right { top: 0; right: 0; width: 60%; max-width: 250px; transform-origin: top right; opacity: 1; transform: scale(1); }
+        
+        /* Middle and Bottom flowers are hidden initially */
+        .f-mid-left { top: 40%; left: 0; width: 55%; max-width: 220px; transform-origin: center left; opacity: 0; transform: scale(0.5); }
+        .f-mid-right { top: 40%; right: 0; width: 55%; max-width: 220px; transform-origin: center right; opacity: 0; transform: scale(0.5); }
+        .f-bottom { bottom: 0; left: 0; width: 100%; max-width: 500px; transform-origin: bottom center; opacity: 0; transform: scale(0.5); }
 
         .divider-line {
             width: 100%;
@@ -94,9 +96,9 @@
 
     <div class="bg-texture"></div>
 
-    <!-- Fixed Florals -->
+    <!-- Fixed Florals (File names perfectly matched to your GitHub Repo) -->
     <div class="mobile-container relative pointer-events-none" style="position: fixed; left: 50%; transform: translateX(-50%); height: 100vh; z-index: 20;">
-        <img src="./left.png" class="floral f-top-left" id="fl-tl" alt="">
+        <img src="./leftheader.png" class="floral f-top-left" id="fl-tl" alt="">
         <img src="./rightheader.png" class="floral f-top-right" id="fl-tr" alt="">
         
         <img src="./leftmidlefooter.png" class="floral f-mid-left" id="fl-ml" alt="">
@@ -218,7 +220,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const guestId = urlParams.get('id');
 
-        // --- Fetch Name (With Fallback for Local Testing) ---
+        // --- Fetch Name (With Fallback) ---
         async function fetchGuest() {
             if (guestId) {
                 try {
@@ -233,17 +235,15 @@
                         });
                     }
                 } catch(e) {
-                    console.log("CORS/Fetch error, using default name.");
-                    document.getElementById('guest-name').innerText = "Mr. Inviter Name";
+                    document.getElementById('guest-name').innerText = "Honorable Guest";
                 }
             } else {
-                // This happens when you just double-click the file without ?id= in the URL
-                document.getElementById('guest-name').innerText = "Mr. Inviter Name";
+                document.getElementById('guest-name').innerText = "Honorable Guest";
             }
         }
         fetchGuest();
 
-        // --- Audio Play on First Interaction ---
+        // --- Audio Play ---
         let audioPlayed = false;
         const audio = document.getElementById('bg-music');
         function playAudio() {
@@ -258,38 +258,34 @@
 
 
         // ==========================================
-        // SUPER AI ANIMATIONS (GSAP) - FIXED
+        // SUPER AI ANIMATIONS (GSAP) - 100% FIXED
         // ==========================================
         gsap.registerPlugin(ScrollTrigger);
-
-        // Set all florals to explicitly hidden via GSAP first
-        gsap.set('.floral', { scale: 0, opacity: 0 });
         
-        // 1. Statue Shrinks & Top Flowers Bloom IN (Scroll Section 1)
+        // 1. Statue Shrinks & Top Flowers Fade OUT (Scroll Section 1)
         const tl1 = gsap.timeline({
             scrollTrigger: { trigger: "#sec-1", start: "top top", end: "bottom top", scrub: 1 }
         });
         tl1.to("#statue-container", { scale: 0.3, opacity: 0, y: -150 }, 0)
-           .to("#fl-tl, #fl-tr", { scale: 1, opacity: 1, ease: "back.out(1.5)" }, 0); 
+           .to("#fl-tl, #fl-tr", { scale: 0.8, opacity: 0, ease: "power2.inOut" }, 0); 
 
-        // 2. Top Flowers Fade OUT & Middle Flowers Bloom IN (Scroll Section 2)
+        // 2. Middle Flowers (Bloom IN -> Fade OUT) (Scroll Section 2)
         const tl2 = gsap.timeline({
-            scrollTrigger: { trigger: "#sec-2", start: "top center", end: "bottom center", scrub: 1 }
+            scrollTrigger: { trigger: "#sec-2", start: "top 60%", end: "bottom 30%", scrub: 1 }
         });
-        tl2.to("#fl-tl, #fl-tr", { scale: 0.7, opacity: 0, ease: "power2.inOut" }, 0)
-           .to("#fl-ml, #fl-mr", { scale: 1, opacity: 1, ease: "back.out(1.5)" }, 0.2); 
+        tl2.to("#fl-ml, #fl-mr", { scale: 1, opacity: 1, duration: 1, ease: "back.out(1.5)" }, 0) 
+           .to("#fl-ml, #fl-mr", { scale: 0.8, opacity: 0, duration: 1, ease: "power2.inOut" }, "+=0.5"); 
 
-        // 3. Middle Flowers Fade OUT & Bottom Flowers Bloom IN (Scroll Section 3)
-        const tl3 = gsap.timeline({
-            scrollTrigger: { trigger: "#sec-3", start: "top center", end: "bottom bottom", scrub: 1 }
+        // 3. Bottom Flowers (Bloom IN beautifully at the end) (Scroll Section 3)
+        gsap.to("#fl-b", {
+            scrollTrigger: { trigger: "#sec-3", start: "top 70%", end: "bottom bottom", scrub: 1 },
+            scale: 1, opacity: 1, y: 0, ease: "back.out(1.2)"
         });
-        tl3.to("#fl-ml, #fl-mr", { scale: 0.7, opacity: 0, ease: "power2.inOut" }, 0)
-           .to("#fl-b", { scale: 1, opacity: 1, ease: "back.out(1.2)" }, 0.2); 
 
         // 4. Text Elements Slide Up Smoothly
         gsap.utils.toArray('.gs-text').forEach(elem => {
             gsap.fromTo(elem, 
-                { opacity: 0, y: 50 },
+                { opacity: 0, y: 40 },
                 {
                     scrollTrigger: { trigger: elem, start: "top 95%", end: "top 60%", scrub: 0.5 },
                     opacity: 1, y: 0
