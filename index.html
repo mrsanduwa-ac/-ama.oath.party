@@ -1,328 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amaya's Oaths Party</title>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- GSAP for Advanced Animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root {
-            --navy-text: #1d254b;
-            --black-text: #1a1a1a;
+        body { margin: 0; padding: 0; background-color: #000; height: 400vh; font-family: sans-serif; }
+        
+        #video-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            background-color: #eaddcd;
-            scroll-behavior: smooth;
-        }
+        #main-video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Background Texture */
-        .bg-texture {
+        /* Interactive Overlay Elements */
+        .interactive-box {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #eaddcd; 
-            background-image: url('./background.jpg'); 
-            background-size: cover;
-            background-position: center;
-            background-repeat: repeat;
-            z-index: -10;
-        }
-
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
-
-        .font-script { font-family: 'Great Vibes', cursive; }
-        .font-serif { font-family: 'Playfair Display', serif; }
-        .font-sans { font-family: 'Montserrat', sans-serif; }
-
-        .mobile-container {
-            max-width: 500px;
-            margin: 0 auto;
-            position: relative;
-            box-shadow: 0 0 50px rgba(0,0,0,0.15);
-            min-height: 100vh;
-            background: transparent;
-        }
-
-        /* Magic Floral Layers */
-        .floral { 
-            position: fixed; 
-            z-index: 20; 
-            pointer-events: none; 
+            z-index: 100;
+            transition: opacity 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+            cursor: move; /* Shows it's draggable in Edit Mode */
         }
         
-        /* Top flowers are fully visible on load */
-        .f-top-left { top: 0; left: 0; width: 60%; max-width: 250px; transform-origin: top left; opacity: 1; transform: scale(1); }
-        .f-top-right { top: 0; right: 0; width: 60%; max-width: 250px; transform-origin: top right; opacity: 1; transform: scale(1); }
+        .interactive-box.visible { opacity: 1; pointer-events: auto; }
         
-        /* Middle and Bottom flowers are hidden initially */
-        .f-mid-left { top: 40%; left: 0; width: 55%; max-width: 220px; transform-origin: center left; opacity: 0; transform: scale(0.5); }
-        .f-mid-right { top: 40%; right: 0; width: 55%; max-width: 220px; transform-origin: center right; opacity: 0; transform: scale(0.5); }
-        .f-bottom { bottom: 0; left: 0; width: 100%; max-width: 500px; transform-origin: bottom center; opacity: 0; transform: scale(0.5); }
+        /* Edit Mode Styles */
+        .edit-mode .interactive-box { outline: 2px dashed #3b82f6; opacity: 1; pointer-events: auto; }
+        
+        #input-box { width: 280px; height: 100px; top: 60%; left: 50%; transform: translate(-50%, -50%); }
+        #btn-box { width: 200px; height: 50px; top: 75%; left: 50%; transform: translate(-50%, -50%); }
 
-        .divider-line {
-            width: 100%;
-            height: 2px;
-            background-color: var(--black-text);
-            opacity: 0.8;
-            margin: 15px 0;
-        }
+        textarea { width: 100%; height: 100%; background: transparent; border: 1px solid #ccc; color: white; padding: 10px; border-radius: 8px; resize: none; outline: none; }
     </style>
 </head>
 <body>
 
-    <audio id="bg-music" loop>
-        <source src="./music.mp3" type="audio/mpeg">
-    </audio>
-
-    <div class="bg-texture"></div>
-
-    <!-- Fixed Florals (File names perfectly matched to your GitHub Repo) -->
-    <div class="mobile-container relative pointer-events-none" style="position: fixed; left: 50%; transform: translateX(-50%); height: 100vh; z-index: 20;">
-        <img src="./leftheader.png" class="floral f-top-left" id="fl-tl" alt="">
-        <img src="./rightheader.png" class="floral f-top-right" id="fl-tr" alt="">
-        
-        <img src="./leftmidlefooter.png" class="floral f-mid-left" id="fl-ml" alt="">
-        <img src="./rightmidlefooter.png" class="floral f-mid-right" id="fl-mr" alt="">
-        
-        <img src="./footer.png" class="floral f-bottom" id="fl-b" alt="">
+    <div id="video-container">
+        <video id="main-video" src="Comp 1.mp4" muted playsinline></video>
     </div>
 
-    <!-- Main Content -->
-    <div class="mobile-container pb-10 relative z-10" id="scroll-container">
-        
-        <!-- SECTION 1: Statue -->
-        <section class="h-[110vh] w-full flex items-center justify-center px-6 relative" id="sec-1">
-            <div id="statue-container" class="w-full flex items-center justify-center fixed top-0 left-0 h-screen pointer-events-none z-10">
-                <img src="./logo.png" alt="Lady Justice" class="w-[85%] max-w-[400px] object-contain drop-shadow-2xl">
-            </div>
-            
-            <div class="absolute bottom-32 flex flex-col items-center opacity-70 animate-bounce z-20">
-                <span class="font-sans text-[11px] font-bold tracking-[0.3em] text-[var(--navy-text)] mb-3">SCROLL DOWN</span>
-                <i class="fa-solid fa-angles-down text-[var(--navy-text)] text-2xl"></i>
-            </div>
-        </section>
+    <div id="input-box" class="interactive-box">
+        <textarea id="rsvp-message" placeholder="Add a wish... (Press Enter)"></textarea>
+    </div>
 
-        <!-- SECTION 2: Text -->
-        <section class="relative w-full min-h-[100vh] pt-32 pb-12 px-8 text-center flex flex-col items-center z-10" id="sec-2">
-            
-            <h1 class="font-script text-[4.5rem] md:text-[5rem] text-[var(--black-text)] mb-8 gs-text drop-shadow-sm leading-none mt-10">
-                Oaths Party
-            </h1>
+    <button id="btn-box" class="interactive-box" onclick="openRSVPModal()">
+        <div class="w-full h-full bg-blue-900/50 rounded-lg flex items-center justify-center text-white font-bold border border-white/20">RSVP</div>
+    </button>
 
-            <p id="guest-name" class="font-serif text-2xl font-semibold text-[var(--black-text)] mb-3 gs-text min-h-[30px] border-b border-[var(--black-text)] pb-2 px-4">
-                Mr. Inviter Name
-            </p>
-            
-            <p class="font-serif text-[var(--black-text)] text-lg mb-1 gs-text mt-4">You are cordially invited</p>
-            <p class="font-serif text-[var(--black-text)] text-lg mb-10 gs-text">to celebrate the Enrollment of</p>
-
-            <h2 class="font-script text-[4rem] md:text-[4.5rem] leading-[1.1] text-[var(--navy-text)] mb-10 gs-text" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
-                Amaya Muhandiramge
-            </h2>
-
-            <p class="font-serif text-[var(--black-text)] text-lg gs-text">as an Attorney-at-Law</p>
-            <p class="font-serif text-[var(--black-text)] text-lg gs-text mb-16">of the Supreme Court of Sri Lanka</p>
-            
-        </section>
-
-        <!-- SECTION 3: Details & RSVP -->
-        <section class="relative w-full min-h-screen pt-12 pb-10 px-8 text-center flex flex-col items-center z-10" id="sec-3">
-            
-            <!-- Icons -->
-            <div class="flex items-center justify-center gap-10 mb-8 gs-text text-[var(--navy-text)] opacity-90">
-                <i class="fa-solid fa-bell-concierge text-4xl"></i>
-                <div class="w-[2px] h-12 bg-black opacity-80"></div>
-                <i class="fa-solid fa-champagne-glasses text-4xl"></i>
-            </div>
-
-            <p class="font-serif text-[var(--black-text)] text-xl leading-relaxed mb-6 gs-text font-medium px-2">
-                Join us for an evening of joyous celebration<br>dinner, and fellowship<br>to mark this momentous milestone.
-            </p>
-
-            <!-- Map & Date -->
-            <div class="w-full mt-4 mb-6 gs-text relative">
-                <div class="divider-line"></div>
-                <div class="flex items-center justify-between py-2">
-                    <div class="text-left flex-1 border-r-2 border-black pr-4">
-                        <p class="font-serif text-[var(--black-text)] text-[1.1rem] md:text-xl font-semibold mb-3">Friday 10<sup>th</sup> of July 2026</p>
-                        <div class="w-full h-[2px] bg-black opacity-80 mb-3"></div>
-                        <p class="font-serif text-[var(--black-text)] text-[1.1rem] md:text-xl font-semibold">Time: 6:00 PM onwards</p>
-                    </div>
-                    <a href="https://maps.app.goo.gl/r6s2sJ2697xUo5oB7" target="_blank" class="pl-4 pb-2 z-50 relative pointer-events-auto">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Google_Maps_icon_%282020%29.svg/512px-Google_Maps_icon_%282020%29.svg.png" alt="Map" class="w-16 h-16 object-contain hover:scale-110 transition-transform drop-shadow-md">
-                    </a>
-                </div>
-                <div class="divider-line"></div>
-            </div>
-
-            <p class="font-serif text-[var(--black-text)] text-xl font-bold gs-text mb-12">
-                Venue: Sundale Hotel , Divulapitiya
-            </p>
-
-            <!-- RSVP Form -->
-            <form id="rsvp-form" class="w-full bg-white/60 backdrop-blur-md rounded-[2rem] p-6 shadow-sm border border-white gs-text relative z-30 mb-8 pointer-events-auto">
-                
-                <input type="text" id="wish-message" placeholder="ADD ANY TEXT OR WISH" class="w-full bg-transparent text-center font-serif text-sm tracking-widest text-[var(--navy-text)] focus:outline-none py-2 mb-6 uppercase placeholder:text-[var(--navy-text)] border-b border-transparent focus:border-[var(--navy-text)] transition-colors">
-                
-                <div class="flex gap-4 justify-center mb-6 text-sm">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="attendance" value="Attending" class="peer sr-only" required>
-                        <span class="px-4 py-2 rounded-full border border-[var(--navy-text)] text-[var(--navy-text)] peer-checked:bg-[var(--navy-text)] peer-checked:text-white transition-colors font-serif font-medium shadow-sm">Attending</span>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="attendance" value="Not_Attending" class="peer sr-only">
-                        <span class="px-4 py-2 rounded-full border border-[var(--navy-text)] text-[var(--navy-text)] peer-checked:bg-red-800 peer-checked:text-white peer-checked:border-red-800 transition-colors font-serif font-medium shadow-sm">Declines</span>
-                    </label>
-                </div>
-
-                <button type="submit" id="submit-btn" class="w-full bg-[#0d1b3e] text-white font-serif tracking-[0.3em] uppercase text-xl py-4 rounded-full shadow-lg hover:bg-black transition-colors">
-                    R S V P
-                </button>
-            </form>
-
-            <div id="rsvp-success" class="hidden w-full gs-text bg-white/70 p-6 rounded-[2rem] backdrop-blur-sm text-center mb-8 border border-white">
-                <i class="fa-solid fa-circle-check text-4xl text-emerald-600 mb-3"></i>
-                <p class="font-serif text-[var(--black-text)] text-xl font-medium">Thank You!</p>
-            </div>
-
-            <!-- Exact Watermark -->
-            <div class="mt-4 gs-text z-50 pb-10 pointer-events-auto">
-                <a href="https://yourwebsite.com" target="_blank" class="font-sans text-[12px] text-[var(--black-text)] font-medium tracking-wide hover:opacity-70 transition-opacity">
-                    Powerd with Craftgrid by Sandusha
-                </a>
-            </div>
-
-        </section>
+    <!-- Footer -->
+    <div id="footer-container" class="fixed bottom-4 w-full text-center text-white/70 text-xs font-bold z-50">
+        Powered by <a href="https://your-craftgrid-link.com" class="text-blue-400">CRAFTGRID</a><br>
+        © 2026 All Right Reserved | Sandusha Avishkha
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi0Nti2-5JTLZ_7LI5d1ROB0JHO7wkVHWJ4Vm5fHrQPxa8ubE9HAJNwLEaNY9M3gGszA/exec';
-        const urlParams = new URLSearchParams(window.location.search);
-        const guestId = urlParams.get('id');
+        const video = document.getElementById('main-video');
+        const inputContainer = document.getElementById('input-box');
+        const btnContainer = document.getElementById('btn-box');
 
-        // --- Fetch Name (With Fallback) ---
-        async function fetchGuest() {
-            if (guestId) {
-                try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getGuest&id=${guestId}`);
-                    const data = await res.json();
-                    if(!data.error) {
-                        document.getElementById('guest-name').innerText = `${data.title} ${data.name}`;
-                        fetch(SCRIPT_URL, {
-                            method: 'POST', mode: 'no-cors',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: new URLSearchParams({ action: 'updateOpened', id: guestId })
-                        });
-                    }
-                } catch(e) {
-                    document.getElementById('guest-name').innerText = "Honorable Guest";
-                }
+        // Scroll Sync Logic
+        window.addEventListener('scroll', () => {
+            const scrollFraction = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+            const frameTime = video.duration * scrollFraction;
+            video.currentTime = frameTime;
+
+            // Show elements only at the end (e.g., > 80% scroll)
+            if (scrollFraction > 0.8) {
+                inputContainer.classList.add('visible');
+                btnContainer.classList.add('visible');
             } else {
-                document.getElementById('guest-name').innerText = "Honorable Guest";
+                inputContainer.classList.remove('visible');
+                btnContainer.classList.remove('visible');
             }
-        }
-        fetchGuest();
+        });
 
-        // --- Audio Play ---
-        let audioPlayed = false;
-        const audio = document.getElementById('bg-music');
-        function playAudio() {
-            if(!audioPlayed) {
-                audio.play().catch(e => {});
-                audioPlayed = true;
+        const msgInput = document.getElementById('rsvp-message');
+        msgInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if(msgInput.value.trim()) sendData('message', msgInput.value.trim());
             }
+        });
+
+        function openRSVPModal() {
+            Swal.fire({
+                title: 'RSVP Confirmation',
+                html: `<div class="flex flex-col gap-2"><label><input type="radio" name="st" value="Attending"> Yes</label><label><input type="radio" name="st" value="Not_Attending"> No</label></div>`,
+                preConfirm: () => document.querySelector('input[name="st"]:checked')?.value
+            }).then((r) => { if(r.value) sendData('rsvp', r.value); });
         }
-        window.addEventListener('scroll', playAudio, {passive: true});
-        window.addEventListener('touchstart', playAudio, {passive: true});
-        window.addEventListener('click', playAudio, {passive: true});
 
-
-        // ==========================================
-        // SUPER AI ANIMATIONS (GSAP) - 100% FIXED
-        // ==========================================
-        gsap.registerPlugin(ScrollTrigger);
-        
-        // 1. Statue Shrinks & Top Flowers Fade OUT (Scroll Section 1)
-        const tl1 = gsap.timeline({
-            scrollTrigger: { trigger: "#sec-1", start: "top top", end: "bottom top", scrub: 1 }
-        });
-        tl1.to("#statue-container", { scale: 0.3, opacity: 0, y: -150 }, 0)
-           .to("#fl-tl, #fl-tr", { scale: 0.8, opacity: 0, ease: "power2.inOut" }, 0); 
-
-        // 2. Middle Flowers (Bloom IN -> Fade OUT) (Scroll Section 2)
-        const tl2 = gsap.timeline({
-            scrollTrigger: { trigger: "#sec-2", start: "top 60%", end: "bottom 30%", scrub: 1 }
-        });
-        tl2.to("#fl-ml, #fl-mr", { scale: 1, opacity: 1, duration: 1, ease: "back.out(1.5)" }, 0) 
-           .to("#fl-ml, #fl-mr", { scale: 0.8, opacity: 0, duration: 1, ease: "power2.inOut" }, "+=0.5"); 
-
-        // 3. Bottom Flowers (Bloom IN beautifully at the end) (Scroll Section 3)
-        gsap.to("#fl-b", {
-            scrollTrigger: { trigger: "#sec-3", start: "top 70%", end: "bottom bottom", scrub: 1 },
-            scale: 1, opacity: 1, y: 0, ease: "back.out(1.2)"
-        });
-
-        // 4. Text Elements Slide Up Smoothly
-        gsap.utils.toArray('.gs-text').forEach(elem => {
-            gsap.fromTo(elem, 
-                { opacity: 0, y: 40 },
-                {
-                    scrollTrigger: { trigger: elem, start: "top 95%", end: "top 60%", scrub: 0.5 },
-                    opacity: 1, y: 0
-                }
-            );
-        });
-
-        // --- RSVP Form ---
-        document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submit-btn');
-            const statusRadio = document.querySelector('input[name="attendance"]:checked');
+        async function sendData(type, val) {
+            Swal.fire({ title: 'Sending...', didOpen: () => Swal.showLoading() });
+            const id = new URLSearchParams(window.location.search).get('id');
+            const params = new URLSearchParams({ action: 'updateRSVP', id, [type]: val });
             
-            if(!statusRadio) { alert("Please select Attending or Declines"); return; }
-            
-            const status = statusRadio.value;
-            const message = document.getElementById('wish-message').value;
-            const idToSubmit = guestId || 'UNKNOWN';
-
-            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
-            submitBtn.disabled = true;
-
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ action: 'updateRSVP', id: idToSubmit, rsvp: status, message: message })
+                await fetch('https://script.google.com/macros/s/AKfycbyi0Nti2-5JTLZ_7LI5d1ROB0JHO7wkVHWJ4Vm5fHrQPxa8ubE9HAJNwLEaNY9M3gGszA/exec', { method: 'POST', mode: 'no-cors', body: params });
+                Swal.fire({ icon: 'success', title: 'Thank you!' });
+                if(type === 'message') msgInput.value = '';
+            } catch(e) { Swal.fire({ icon: 'error', title: 'Failed!' }); }
+        }
+
+        // To use: Add ?edit=true to the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.get('edit') === 'true') {
+            document.body.classList.add('edit-mode');
+            document.querySelectorAll('.interactive-box').forEach(el => {
+                el.setAttribute('draggable', 'true');
+                el.addEventListener('dragend', (e) => {
+                    el.style.left = e.clientX + 'px';
+                    el.style.top = e.clientY + 'px';
+                    console.log("New Position: ", el.id, " - Top:", el.style.top, "Left:", el.style.left);
                 });
-                
-                document.getElementById('rsvp-form').style.display = 'none';
-                document.getElementById('rsvp-success').classList.remove('hidden');
-            } catch(e) {
-                alert("Error submitting. Please try again.");
-                submitBtn.innerHTML = 'R S V P';
-                submitBtn.disabled = false;
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>
