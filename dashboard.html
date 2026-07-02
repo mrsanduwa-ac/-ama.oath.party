@@ -4,57 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Amaya's Oaths Party - Dashboard</title>
-    
-    <!-- Force Light Scheme for App conversion -->
     <meta name="color-scheme" content="light">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons & SweetAlert2 -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc !important; /* Force light bg */
-            color: #0f172a !important; /* Force dark text */
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc !important; color: #0f172a !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
-        .animate-slide-in { animation: slideIn 0.3s ease-out forwards; opacity: 0; }
-        
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Force SweetAlert to be Light Mode */
         .swal2-popup { background: #ffffff !important; color: #1e293b !important; border-radius: 20px !important; }
         .swal2-title { color: #0f172a !important; font-size: 1.25rem !important; }
+        
+        /* Prevent click propagation issue on cards */
+        .action-btn { position: relative; z-index: 10; } 
     </style>
 </head>
 <body class="min-h-screen pb-12 flex flex-col">
 
-    <!-- Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-serif italic text-xl shadow-inner">
-                    A
-                </div>
+                <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-serif italic text-xl shadow-inner">A</div>
                 <div>
                     <h1 class="text-lg md:text-xl font-bold text-slate-800 tracking-tight leading-tight">Amaya's Oaths Party</h1>
-                    <p class="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider">Invitation Dashboard</p>
+                    <p class="text-[10px] md:text-xs text-slate-500 font-medium uppercase tracking-wider">Dashboard & Analytics</p>
                 </div>
             </div>
             <div id="sync-indicator" class="flex items-center gap-2 text-xs md:text-sm text-blue-600 font-medium bg-blue-50 px-3 py-1.5 rounded-full hidden transition-all">
@@ -65,58 +41,60 @@
 
     <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-6 md:space-y-8 flex-grow w-full">
         
-        <!-- Stats Widgets (Now Clickable) -->
+        <!-- Individual Stats -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <div onclick="showStatModal('total')" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1 animate-fade-in cursor-pointer active:scale-95">
-                <div class="p-2.5 md:p-3 rounded-xl bg-blue-50 text-blue-600"><i data-lucide="users" class="w-5 h-5 md:w-6 md:h-6"></i></div>
-                <div>
-                    <p class="text-xs md:text-sm font-medium text-slate-500 mb-0.5 md:mb-0">Total Invites</p>
-                    <p id="stat-total" class="text-xl md:text-2xl font-bold text-blue-600">0</p>
-                </div>
+            <!-- Same widgets as before -->
+            <div onclick="showStatModal('total')" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center gap-3 cursor-pointer active:scale-95 animate-fade-in hover:shadow-md transition-all">
+                <div class="p-2.5 md:p-3 rounded-xl bg-blue-50 text-blue-600"><i data-lucide="users" class="w-5 h-5"></i></div>
+                <div class="text-center md:text-left"><p class="text-xs md:text-sm text-slate-500 font-medium">Total Invites</p><p id="stat-total" class="text-xl md:text-2xl font-bold text-blue-600">0</p></div>
             </div>
-            <div onclick="showStatModal('opened')" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1 animate-fade-in cursor-pointer active:scale-95" style="animation-delay: 0.1s;">
-                <div class="p-2.5 md:p-3 rounded-xl bg-purple-50 text-purple-600"><i data-lucide="eye" class="w-5 h-5 md:w-6 md:h-6"></i></div>
-                <div>
-                    <p class="text-xs md:text-sm font-medium text-slate-500 mb-0.5 md:mb-0">Link Opened</p>
-                    <p id="stat-opened" class="text-xl md:text-2xl font-bold text-purple-600">0</p>
-                </div>
+            <div onclick="showStatModal('opened')" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center gap-3 cursor-pointer active:scale-95 animate-fade-in hover:shadow-md transition-all" style="animation-delay: 0.1s;">
+                <div class="p-2.5 md:p-3 rounded-xl bg-purple-50 text-purple-600"><i data-lucide="eye" class="w-5 h-5"></i></div>
+                <div class="text-center md:text-left"><p class="text-xs md:text-sm text-slate-500 font-medium">Link Opened</p><p id="stat-opened" class="text-xl md:text-2xl font-bold text-purple-600">0</p></div>
             </div>
-            <div onclick="showStatModal('attending')" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1 animate-fade-in cursor-pointer active:scale-95" style="animation-delay: 0.2s;">
-                <div class="p-2.5 md:p-3 rounded-xl bg-emerald-50 text-emerald-600"><i data-lucide="user-check" class="w-5 h-5 md:w-6 md:h-6"></i></div>
-                <div>
-                    <p class="text-xs md:text-sm font-medium text-slate-500 mb-0.5 md:mb-0">Attending</p>
-                    <p id="stat-attending" class="text-xl md:text-2xl font-bold text-emerald-600">0</p>
-                </div>
+            <div onclick="showStatModal('attending')" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center gap-3 cursor-pointer active:scale-95 animate-fade-in hover:shadow-md transition-all" style="animation-delay: 0.2s;">
+                <div class="p-2.5 md:p-3 rounded-xl bg-emerald-50 text-emerald-600"><i data-lucide="user-check" class="w-5 h-5"></i></div>
+                <div class="text-center md:text-left"><p class="text-xs md:text-sm text-slate-500 font-medium">Attending</p><p id="stat-attending" class="text-xl md:text-2xl font-bold text-emerald-600">0</p></div>
             </div>
-            <div onclick="showStatModal('not_attending')" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1 animate-fade-in cursor-pointer active:scale-95" style="animation-delay: 0.3s;">
-                <div class="p-2.5 md:p-3 rounded-xl bg-rose-50 text-rose-600"><i data-lucide="user-x" class="w-5 h-5 md:w-6 md:h-6"></i></div>
-                <div>
-                    <p class="text-xs md:text-sm font-medium text-slate-500 mb-0.5 md:mb-0">Not Attending</p>
-                    <p id="stat-not-attending" class="text-xl md:text-2xl font-bold text-rose-600">0</p>
+            <div onclick="showStatModal('not_attending')" class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center gap-3 cursor-pointer active:scale-95 animate-fade-in hover:shadow-md transition-all" style="animation-delay: 0.3s;">
+                <div class="p-2.5 md:p-3 rounded-xl bg-rose-50 text-rose-600"><i data-lucide="user-x" class="w-5 h-5"></i></div>
+                <div class="text-center md:text-left"><p class="text-xs md:text-sm text-slate-500 font-medium">Not Attending</p><p id="stat-not-attending" class="text-xl md:text-2xl font-bold text-rose-600">0</p></div>
+            </div>
+        </div>
+
+        <!-- 🔴 NEW: GROUP LINK ANALYTICS -->
+        <div class="bg-white rounded-2xl shadow-sm border border-indigo-100 p-4 md:p-6 animate-fade-in bg-gradient-to-br from-indigo-50/50 to-white" style="animation-delay: 0.35s;">
+            <h2 class="text-sm md:text-base font-bold text-indigo-900 mb-4 flex items-center gap-2">
+                <i data-lucide="link" class="w-5 h-5 text-indigo-500"></i> Group Link Analytics
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                <div class="bg-white border border-indigo-100 rounded-xl p-3 md:p-4 text-center shadow-sm">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Opens</p>
+                    <p id="group-opens" class="text-xl font-bold text-indigo-700 mt-1">0</p>
+                </div>
+                <div class="bg-white border border-indigo-100 rounded-xl p-3 md:p-4 text-center shadow-sm">
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Call Clicks</p>
+                    <p id="group-clicks" class="text-xl font-bold text-pink-600 mt-1">0</p>
+                </div>
+                <div class="col-span-2 md:col-span-1 flex items-center">
+                    <button onclick="showGroupMessages()" class="w-full h-full min-h-[60px] bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 active:scale-95 text-sm">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i> View Group Wishes
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Add Guest Form -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 animate-fade-in" style="animation-delay: 0.4s;">
-            <h2 class="text-base md:text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                <i data-lucide="plus" class="w-5 h-5 text-blue-600"></i>
-                Create New Invitation
-            </h2>
+            <h2 class="text-base md:text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="plus" class="w-5 h-5 text-blue-600"></i> Create New Invitation</h2>
             <form id="add-guest-form" class="flex flex-col sm:flex-row gap-3">
-                <select id="guest-title" class="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all sm:w-32 outline-none">
-                    <option value="Mr.">Mr.</option>
-                    <option value="Mrs.">Mrs.</option>
-                    <!-- Ms. added as requested -->
-                    <option value="Ms.">Ms.</option>
-                    <option value="Miss.">Miss.</option>
-                    <option value="Dr.">Dr.</option>
-                    <option value="Rev.">Rev.</option>
+                <select id="guest-title" class="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:w-32 outline-none">
+                    <option value="Mr.">Mr.</option><option value="Mrs.">Mrs.</option><option value="Ms.">Ms.</option>
+                    <option value="Miss.">Miss.</option><option value="Dr.">Dr.</option><option value="Rev.">Rev.</option>
                 </select>
-                <input type="text" id="guest-name" placeholder="Guest Name (e.g. Kamal Silva)" required class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all duration-300 outline-none placeholder-slate-400"/>
-                <button type="submit" id="submit-btn" class="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-sm flex items-center justify-center gap-2 whitespace-nowrap hover:shadow-md active:scale-95">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                    Generate & Share
+                <input type="text" id="guest-name" placeholder="Guest Name (e.g. Kamal Silva)" required class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 outline-none"/>
+                <button type="submit" id="submit-btn" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                    <i data-lucide="send" class="w-4 h-4"></i> Generate
                 </button>
             </form>
         </div>
@@ -124,24 +102,15 @@
         <!-- Guest List -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in" style="animation-delay: 0.5s;">
             <div class="px-4 md:px-6 py-4 md:py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
-                <h2 class="text-base md:text-lg font-semibold text-slate-800">Guest List & Live Status</h2>
-                <div class="flex gap-2 items-center">
-                    <button onclick="fetchGuests(false)" class="p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors active:scale-95" title="Refresh Data">
-                        <i data-lucide="clock" class="w-4 h-4" id="refresh-icon"></i>
-                    </button>
-                    <span id="guest-count-badge" class="bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-full">0 Guests</span>
-                </div>
+                <h2 class="text-base md:text-lg font-semibold text-slate-800">Guest List & Status</h2>
+                <span id="guest-count-badge" class="bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-full">0 Guests</span>
             </div>
-            
             <div class="p-4 md:p-6 bg-slate-50/30 min-h-[300px]">
-                <div id="guests-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    <!-- Cards will be injected here via JS -->
-                </div>
+                <div id="guests-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
             </div>
         </div>
     </main>
 
-    <!-- App Watermark Footer -->
     <footer class="mt-auto py-6 text-center animate-fade-in" style="animation-delay: 0.6s;">
         <p class="text-xs text-slate-400 font-medium tracking-wide">
             Powered by <a href="https://www.facebook.com/sandu.malli2/" target="_blank" class="text-blue-500 font-bold hover:text-blue-600 transition-colors">CRAFTGRID</a><br>
@@ -149,303 +118,227 @@
         </p>
     </footer>
 
-    <!-- QR Code Modal -->
-    <div id="qr-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300" onclick="closeQRModal()">
-        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-sm w-full text-center relative transform scale-95 transition-transform duration-300" id="qr-modal-content" onclick="event.stopPropagation()">
-            <button onclick="closeQRModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            
-            <h3 id="qr-title" class="text-lg md:text-xl font-bold text-slate-800 mb-1">Name</h3>
-            <p id="qr-id" class="text-xs text-slate-500 mb-6 font-mono bg-slate-100 inline-block px-3 py-1 rounded-lg">ID: XXX</p>
-            
-            <div class="bg-white p-3 md:p-4 rounded-2xl shadow-inner border border-slate-100 inline-block mx-auto mb-6">
-                <img id="qr-image" src="" alt="QR Code" class="w-40 h-40 md:w-48 md:h-48"/>
-            </div>
-            
-            <p class="text-xs md:text-sm text-slate-500 mb-6">
-                Scanning this QR code will direct <strong id="qr-name-strong" class="text-slate-800">Name</strong> to their personalized 3D invitation.
-            </p>
-            
-            <button onclick="copyCurrentQRLink()" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 text-sm md:text-base active:scale-95">
-                <i data-lucide="copy" class="w-4 h-4"></i>
-                Copy Invitation Link
-            </button>
-        </div>
-    </div>
-
-    <!-- Application Script -->
+    <!-- Scripts -->
     <script>
         lucide.createIcons();
 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi0Nti2-5JTLZ_7LI5d1ROB0JHO7wkVHWJ4Vm5fHrQPxa8ubE9HAJNwLEaNY9M3gGszA/exec';
         let guests = [];
-        let currentQRLink = "";
-        let lastDataString = ""; // To detect changes
+        let groupMessages = [];
+        let lastDataString = ""; 
 
-        const form = document.getElementById('add-guest-form');
-        const syncIndicator = document.getElementById('sync-indicator');
-        const refreshIcon = document.getElementById('refresh-icon');
-        const guestsContainer = document.getElementById('guests-container');
-        const submitBtn = document.getElementById('submit-btn');
-        const nameInput = document.getElementById('guest-name');
+        document.addEventListener('DOMContentLoaded', () => fetchAllData(false));
 
-        // Initial Load
-        document.addEventListener('DOMContentLoaded', () => fetchGuests(false));
-
-        // Auto Refresh Timer (Every 5 seconds)
+        // Silent refresh every 5 seconds
         setInterval(() => {
-            // Only auto-refresh if user is NOT typing a new name (prevents interruption)
+            const nameInput = document.getElementById('guest-name');
             if (document.activeElement !== nameInput && nameInput.value.trim() === '') {
-                fetchGuests(true); // true = silent fetch
+                fetchAllData(true); 
             }
         }, 5000);
 
-        // Fetch Data
-        async function fetchGuests(isSilent = false) {
-            if (!isSilent) {
-                syncIndicator.classList.remove('hidden');
-                refreshIcon.classList.add('animate-spin');
-            }
+        async function fetchAllData(isSilent = false) {
+            if (!isSilent) document.getElementById('sync-indicator').classList.remove('hidden');
             
             try {
-                const response = await fetch(SCRIPT_URL);
-                const data = await response.json();
+                // 1. Fetch Individual Guests
+                const resGuests = await fetch(SCRIPT_URL);
+                const dataGuests = await resGuests.json();
                 
-                if (Array.isArray(data)) {
-                    // Check if data actually changed to avoid flickering
-                    const newDataString = JSON.stringify(data);
+                // 2. Fetch Group Analytics
+                const resGroup = await fetch(`${SCRIPT_URL}?action=getGroupData`);
+                const dataGroup = await resGroup.json();
+
+                if (Array.isArray(dataGuests)) {
+                    const newDataString = JSON.stringify(dataGuests) + JSON.stringify(dataGroup);
                     if (newDataString !== lastDataString) {
-                        guests = data.reverse();
+                        guests = dataGuests.reverse();
+                        
+                        // Update Group UI
+                        document.getElementById('group-opens').innerText = dataGroup.stats.opens;
+                        document.getElementById('group-clicks').innerText = dataGroup.stats.rsvpClicks;
+                        groupMessages = dataGroup.messages || [];
+
                         lastDataString = newDataString;
                         renderGuests();
                         updateStats();
                     }
                 }
-            } catch (error) {
-                console.error("Error syncing data:", error);
-            } finally {
-                if (!isSilent) {
-                    syncIndicator.classList.add('hidden');
-                    refreshIcon.classList.remove('animate-spin');
-                }
-            }
+            } catch (error) { console.log(error); } 
+            finally { if (!isSilent) document.getElementById('sync-indicator').classList.add('hidden'); }
         }
 
-        // Add New Guest
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const titleInput = document.getElementById('guest-title').value;
-            const nameValue = nameInput.value.trim();
-            
-            if (!nameValue) return;
+        // ==========================================
+        // 🔴 CLICK ON GUEST CARD -> FULL DETAILS POPUP
+        // ==========================================
+        window.openGuestDetails = function(id) {
+            const g = guests.find(x => x.id === id);
+            if(!g) return;
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Generating...`;
-            lucide.createIcons();
-            
-            const id = Math.random().toString(36).substring(2, 8).toUpperCase();
-            
-            const newGuest = {
-                id: id,
-                title: titleInput,
-                name: nameValue,
-                opened: false,
-                rsvp: 'Pending',
-                message: ''
-            };
+            let statusHTML = '';
+            if (g.rsvp === 'Attending') statusHTML = `<span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold text-sm">✅ Attending</span>`;
+            else if (g.rsvp === 'Not_Attending') statusHTML = `<span class="bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-bold text-sm">❌ Not Attending</span>`;
+            else statusHTML = `<span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-bold text-sm">⏳ Pending RSVP</span>`;
 
-            guests.unshift(newGuest); 
-            nameInput.value = '';
-            renderGuests();
-            updateStats();
-            
-            // Trigger Whatsapp Share
-            shareViaWhatsApp(newGuest.id, newGuest.title, newGuest.name);
+            let openedHTML = g.opened 
+                ? `<div class="text-purple-600 font-semibold text-sm flex items-center justify-center gap-1"><i data-lucide="eye" class="w-4 h-4"></i> Opened the Link</div>`
+                : `<div class="text-slate-400 font-medium text-sm flex items-center justify-center gap-1"><i data-lucide="eye-off" class="w-4 h-4"></i> Hasn't Opened Yet</div>`;
 
-            try {
-                const params = new URLSearchParams({ action: 'addGuest', id: id, title: titleInput, name: nameValue });
-                await fetch(SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: params
-                });
-                lastDataString = ""; // Force full render on next sync
-            } catch (error) {
-                console.error('Save failed', error);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> Generate & Share`;
-                lucide.createIcons();
-            }
-        });
+            let msgHTML = g.message 
+                ? `<div class="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-xl text-left">
+                     <p class="text-xs text-blue-500 font-bold uppercase mb-1">Message / Wish</p>
+                     <p class="text-slate-700 italic">"${g.message}"</p>
+                   </div>`
+                : `<div class="mt-4 p-4 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 italic text-sm">No message left by guest.</div>`;
 
-        function updateStats() {
-            const total = guests.length;
-            const opened = guests.filter(g => g.opened).length;
-            const attending = guests.filter(g => g.rsvp === 'Attending').length;
-            const notAttending = guests.filter(g => g.rsvp === 'Not_Attending').length;
-
-            document.getElementById('stat-total').innerText = total;
-            document.getElementById('stat-opened').innerText = opened;
-            document.getElementById('stat-attending').innerText = attending;
-            document.getElementById('stat-not-attending').innerText = notAttending;
-            document.getElementById('guest-count-badge').innerText = `${total} Guests`;
-        }
-
-        // Modals for Top Stat Widgets
-        function showStatModal(type) {
-            let title = '';
-            let filteredList = [];
-            let icon = '';
-
-            if (type === 'total') {
-                title = 'All Invitations'; icon = 'users'; filteredList = guests;
-            } else if (type === 'opened') {
-                title = 'Opened Invitations'; icon = 'eye'; filteredList = guests.filter(g => g.opened);
-            } else if (type === 'attending') {
-                title = 'Attending Guests'; icon = 'user-check'; filteredList = guests.filter(g => g.rsvp === 'Attending');
-            } else if (type === 'not_attending') {
-                title = 'Not Attending'; icon = 'user-x'; filteredList = guests.filter(g => g.rsvp === 'Not_Attending');
-            }
-
-            let htmlContent = `<div class="max-h-64 overflow-y-auto mt-4 pr-2 text-left space-y-2">`;
-            
-            if (filteredList.length === 0) {
-                htmlContent += `<p class="text-slate-500 text-center py-4 italic text-sm">No guests in this category yet.</p>`;
-            } else {
-                filteredList.forEach(g => {
-                    htmlContent += `
-                    <div class="p-3 bg-slate-50 border border-slate-100 rounded-lg flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold">
+            Swal.fire({
+                html: `
+                    <div class="text-center pt-2">
+                        <div class="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3 shadow-inner">
                             ${g.title.replace('.','')}
                         </div>
-                        <span class="font-semibold text-slate-800">${g.name}</span>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-1">${g.name}</h2>
+                        <p class="font-mono text-blue-500 text-xs font-bold mb-4">ID: ${g.id}</p>
+                        
+                        ${openedHTML}
+                        
+                        <div class="my-5">
+                            ${statusHTML}
+                        </div>
+                        
+                        ${msgHTML}
+                    </div>
+                `,
+                showConfirmButton: true, confirmButtonText: 'Close', confirmButtonColor: '#0f172a',
+                customClass: { popup: 'swal2-popup' },
+                didRender: () => lucide.createIcons()
+            });
+        }
+
+        // ==========================================
+        // VIEW GROUP MESSAGES
+        // ==========================================
+        window.showGroupMessages = function() {
+            let htmlContent = `<div class="max-h-80 overflow-y-auto mt-4 pr-2 text-left space-y-3">`;
+            if (groupMessages.length === 0) {
+                htmlContent += `<p class="text-slate-500 text-center py-6 italic">No messages from the group link yet.</p>`;
+            } else {
+                groupMessages.forEach(msg => {
+                    let dateStr = new Date(msg.date).toLocaleDateString();
+                    htmlContent += `
+                    <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-indigo-900">${msg.name}</span>
+                            <span class="text-[10px] text-indigo-400">${dateStr}</span>
+                        </div>
+                        <p class="text-sm text-slate-700 italic">"${msg.message}"</p>
                     </div>`;
                 });
             }
             htmlContent += `</div>`;
 
             Swal.fire({
-                title: `<div class="flex items-center justify-center gap-2"><i data-lucide="${icon}" class="w-6 h-6 text-blue-600"></i> ${title}</div>`,
-                html: htmlContent,
-                confirmButtonText: 'Close',
-                confirmButtonColor: '#0f172a',
-                customClass: { popup: 'swal2-popup' },
-                didRender: () => lucide.createIcons()
+                title: `<div class="flex items-center justify-center gap-2"><i data-lucide="message-circle" class="w-6 h-6 text-indigo-600"></i> Group Wishes</div>`,
+                html: htmlContent, confirmButtonText: 'Close', confirmButtonColor: '#4f46e5',
+                customClass: { popup: 'swal2-popup' }, didRender: () => lucide.createIcons()
             });
         }
 
+        // Render Guest List (Card now triggers the modal)
         function renderGuests() {
             if (guests.length === 0) {
-                guestsContainer.innerHTML = `
-                    <div class="col-span-full py-12 text-center text-slate-400 flex flex-col items-center">
-                        <i data-lucide="mail-open" class="w-12 h-12 mb-3 text-slate-300"></i>
-                        No invitations created yet.<br>Enter a name above and click "Generate & Share"!
-                    </div>`;
-                lucide.createIcons();
+                guestsContainer.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No invitations created yet.</div>`;
                 return;
             }
 
             const html = guests.map((guest, index) => {
                 let openedBadge = guest.opened 
-                    ? `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded-full border border-purple-200"><i data-lucide="eye" class="w-3 h-3"></i> Opened</span>`
-                    : `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full border border-slate-200"><i data-lucide="clock" class="w-3 h-3"></i> Unseen</span>`;
+                    ? `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded-full border border-purple-200">Opened</span>`
+                    : `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded-full border border-slate-100">Unseen</span>`;
                     
                 let rsvpBadge = '';
-                if (guest.rsvp === 'Attending') rsvpBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-200"><i data-lucide="check-circle-2" class="w-3 h-3"></i> Attending</span>`;
-                else if (guest.rsvp === 'Not_Attending') rsvpBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded-full border border-rose-200"><i data-lucide="x-circle" class="w-3 h-3"></i> Can't Make It</span>`;
-                else rsvpBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded-full border border-amber-200"><i data-lucide="clock" class="w-3 h-3"></i> Pending</span>`;
-
-                let msgHtml = guest.message ? `
-                    <div class="mb-4 bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex items-start gap-2">
-                        <i data-lucide="message-square" class="w-4 h-4 text-blue-500 shrink-0 mt-0.5"></i>
-                        <p class="text-sm text-slate-700 font-medium italic">"${guest.message}"</p>
-                    </div>` : '';
+                if (guest.rsvp === 'Attending') rsvpBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-200">Attending</span>`;
+                else if (guest.rsvp === 'Not_Attending') rsvpBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-rose-700 bg-rose-50 px-2 py-1 rounded-full border border-rose-200">Can't Make It</span>`;
+                else rsvpBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded-full border border-amber-200">Pending</span>`;
 
                 return `
-                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col h-full relative">
+                    <div onclick="openGuestDetails('${guest.id}')" class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col h-full relative cursor-pointer active:scale-95 group">
                         <div class="flex justify-between items-start mb-3">
                             <div class="pr-2">
-                                <div class="font-semibold text-slate-900 text-base md:text-lg leading-tight mb-1">${guest.title} ${guest.name}</div>
-                                <span class="font-mono text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">ID: ${guest.id}</span>
+                                <div class="font-bold text-slate-900 text-base md:text-lg leading-tight mb-1 group-hover:text-blue-600 transition-colors">${guest.title} ${guest.name}</div>
+                                <span class="font-mono text-[10px] font-semibold text-blue-500 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">ID: ${guest.id}</span>
                             </div>
-                            <div class="flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-100">
-                                <button onclick="openQRModal('${guest.id}', '${guest.title}', '${guest.name}')" class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-200 rounded-md transition-colors" title="Show QR Code">
-                                    <i data-lucide="qr-code" class="w-4 h-4"></i>
-                                </button>
-                                <button onclick="copyLink('${guest.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-md transition-colors" title="Copy Link">
-                                    <i data-lucide="copy" class="w-4 h-4"></i>
-                                </button>
-                                <button onclick="shareViaWhatsApp('${guest.id}', '${guest.title}', '${guest.name}')" class="p-1.5 text-emerald-600 hover:text-white hover:bg-emerald-500 bg-emerald-100 rounded-md transition-colors" title="Share on WhatsApp">
-                                    <i data-lucide="share-2" class="w-4 h-4"></i>
-                                </button>
+                            <div class="flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-100" onclick="event.stopPropagation()">
+                                <button onclick="shareViaWhatsApp('${guest.id}', '${guest.title}', '${guest.name}')" class="action-btn p-1.5 text-emerald-600 hover:text-white hover:bg-emerald-500 bg-emerald-100 rounded-md transition-colors" title="WhatsApp"><i data-lucide="share-2" class="w-4 h-4"></i></button>
+                                <button onclick="copyLink('${guest.id}')" class="action-btn p-1.5 text-blue-600 hover:text-white hover:bg-blue-500 bg-blue-100 rounded-md transition-colors" title="Copy"><i data-lucide="copy" class="w-4 h-4"></i></button>
                             </div>
                         </div>
-                        ${msgHtml}
                         <div class="mt-auto pt-3 border-t border-slate-100 flex flex-wrap gap-2">
-                            ${openedBadge}
-                            ${rsvpBadge}
+                            ${openedBadge} ${rsvpBadge}
                         </div>
                     </div>
                 `;
             }).join('');
-            
             guestsContainer.innerHTML = html;
             lucide.createIcons();
         }
 
-        // ==========================================
-        function generateLink(id) {
-            return `https://mrsanduwa-ac.github.io/-ama.oath.party/?id=${id}`;
+        function updateStats() {
+            document.getElementById('stat-total').innerText = guests.length;
+            document.getElementById('stat-opened').innerText = guests.filter(g => g.opened).length;
+            document.getElementById('stat-attending').innerText = guests.filter(g => g.rsvp === 'Attending').length;
+            document.getElementById('stat-not-attending').innerText = guests.filter(g => g.rsvp === 'Not_Attending').length;
+            document.getElementById('guest-count-badge').innerText = `${guests.length} Guests`;
         }
 
+        // Add Guest Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('guest-title').value;
+            const name = document.getElementById('guest-name').value.trim();
+            if (!name) return;
+
+            document.getElementById('submit-btn').disabled = true;
+            const id = Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            guests.unshift({ id: id, title: title, name: name, opened: false, rsvp: 'Pending', message: '' }); 
+            document.getElementById('guest-name').value = '';
+            renderGuests(); updateStats();
+            shareViaWhatsApp(id, title, name);
+
+            try {
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'addGuest', id: id, title: title, name: name }) });
+                lastDataString = ""; 
+            } catch (error) {} 
+            finally { document.getElementById('submit-btn').disabled = false; }
+        });
+
+        // Link Helpers
+        function generateLink(id) { return `https://mrsanduwa-ac.github.io/-ama.oath.party/?id=${id}`; }
         function shareViaWhatsApp(id, title, name) {
             const link = generateLink(id);
-            const message = `Hello ${title} ${name},\n\nYou are cordially invited to celebrate Amaya's Enrollment as an Attorney-at-Law of the Supreme Court of Sri Lanka! ✨🎓\n\nPlease view your personalized invitation here:\n${link}\n\nWe look forward to celebrating with you!`;
-            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
+            const msg = `Hello ${title} ${name},\n\nYou are cordially invited to celebrate Amaya's Enrollment as an Attorney-at-Law of the Supreme Court of Sri Lanka! ✨🎓\n\nPlease view your personalized invitation here:\n${link}\n\nWe look forward to celebrating with you!`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
         }
-
         function copyLink(id) {
-            const link = generateLink(id);
-            navigator.clipboard.writeText(link).then(() => {
+            navigator.clipboard.writeText(generateLink(id)).then(() => {
                 Swal.fire({ title: 'Copied!', text: 'Link copied to clipboard.', icon: 'success', timer: 1500, showConfirmButton: false, customClass: { popup: 'swal2-popup' }});
             });
         }
+        function showStatModal(type) {
+            let title = ''; let filteredList = []; let icon = '';
+            if (type === 'total') { title = 'All Invitations'; icon = 'users'; filteredList = guests; } 
+            else if (type === 'opened') { title = 'Opened Invitations'; icon = 'eye'; filteredList = guests.filter(g => g.opened); } 
+            else if (type === 'attending') { title = 'Attending Guests'; icon = 'user-check'; filteredList = guests.filter(g => g.rsvp === 'Attending'); } 
+            else if (type === 'not_attending') { title = 'Not Attending'; icon = 'user-x'; filteredList = guests.filter(g => g.rsvp === 'Not_Attending'); }
 
-        function copyCurrentQRLink() {
-            navigator.clipboard.writeText(currentQRLink).then(() => {
-                Swal.fire({ title: 'Copied!', text: 'Link copied to clipboard.', icon: 'success', timer: 1500, showConfirmButton: false, customClass: { popup: 'swal2-popup' }});
-                closeQRModal();
+            let htmlContent = `<div class="max-h-64 overflow-y-auto mt-4 pr-2 text-left space-y-2">`;
+            if (filteredList.length === 0) htmlContent += `<p class="text-slate-500 text-center py-4 italic text-sm">No guests in this category.</p>`;
+            else filteredList.forEach(g => {
+                htmlContent += `<div onclick="openGuestDetails('${g.id}')" class="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-lg flex items-center gap-3 cursor-pointer transition-colors"><div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold">${g.title.replace('.','')}</div><span class="font-semibold text-slate-800">${g.name}</span></div>`;
             });
-        }
-
-        function openQRModal(id, title, name) {
-            const modal = document.getElementById('qr-modal');
-            const modalContent = document.getElementById('qr-modal-content');
-            currentQRLink = generateLink(id);
-            
-            document.getElementById('qr-title').innerText = `${title} ${name}`;
-            document.getElementById('qr-name-strong').innerText = name;
-            document.getElementById('qr-id').innerText = `ID: ${id}`;
-            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentQRLink)}&color=0f172a`;
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeQRModal() {
-            const modal = document.getElementById('qr-modal');
-            const modalContent = document.getElementById('qr-modal-content');
-            
-            modal.classList.add('opacity-0');
-            modalContent.classList.add('scale-95');
-            
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            htmlContent += `</div>`;
+            Swal.fire({ title: `<div class="flex items-center justify-center gap-2"><i data-lucide="${icon}" class="w-6 h-6 text-blue-600"></i> ${title}</div>`, html: htmlContent, confirmButtonText: 'Close', confirmButtonColor: '#0f172a', customClass: { popup: 'swal2-popup' }, didRender: () => lucide.createIcons() });
         }
     </script>
 </body>
