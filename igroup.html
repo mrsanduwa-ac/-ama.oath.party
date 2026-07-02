@@ -128,8 +128,8 @@
         </div>
 
         <!-- Call RSVP Button -->
-        <div id="rsvp-btn-container" class="overlay-box">
-            <button id="rsvp-btn" onclick="window.location.href='tel:+94762260519'">
+        <div id="rsvp-btn-container" class="overlay-box click-area">
+            <button id="rsvp-btn" onclick="handleGroupRSVP()">
                 <i data-lucide="phone-call" class="w-4 h-4"></i> RSVP (Call)
             </button>
         </div>
@@ -172,7 +172,10 @@
         let isPlaying = false;
         let messageSent = false;
 
+        // 🔴 NEW: Track Group Link Open when page loads
         window.addEventListener('load', () => {
+            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'trackGroupOpen' }) });
+            
             video.addEventListener('canplaythrough', () => {
                 setTimeout(() => {
                     loadingAnim.style.display = 'none';
@@ -231,12 +234,12 @@
             } else {
                 if (isPlaying) { video.pause(); bgm.pause(); isPlaying = false; updateControlIcon('play'); } 
                 else { video.play(); bgm.play(); isPlaying = true; updateControlIcon('pause'); }
-            }
-        }
-
-        function updateControlIcon(icon) {
-            controlIcon.setAttribute('data-lucide', icon);
-            lucide.createIcons();
+        // 🔴 NEW: Track Call Button Click
+        function handleGroupRSVP() {
+            // Send tracking signal to Google Sheet silently
+            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'trackGroupRSVP' }) });
+            // Redirect to call phone number
+            setTimeout(() => { window.location.href = 'tel:+94762260519'; }, 300);
         }
 
         // 🟢 New Feature: Group Message Popup (Name + Message)
