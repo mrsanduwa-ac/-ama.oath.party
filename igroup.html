@@ -33,7 +33,7 @@
             pointer-events: none; 
         }
 
-        #touch-layer { position: absolute; inset: 0; z-index: 10; cursor: pointer; }
+        #touch-layer { position: absolute; inset: 0; z-index: 10; cursor: pointer;}
 
         .overlay-box {
             position: absolute; opacity: 0; pointer-events: none;
@@ -74,20 +74,28 @@
         #footer-container.visible { opacity: 1; pointer-events: auto; }
         #footer-container a { color: #93c5fd; text-decoration: none; font-weight: 700;}
 
-        #control-btn {
+        #replay-btn {
             position: absolute; top: 20px; right: 20px; z-index: 100;
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
-            color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; 
-            width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+            color: white; border: none; border-radius: 50%; width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 0.5s ease; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        #control-btn.visible { opacity: 1; pointer-events: auto; }
+        #replay-btn.visible { opacity: 1; pointer-events: auto; }
+
+        #open-btn {
+            background: #0c2b5e; color: white; padding: 12px 30px; border-radius: 50px;
+            font-weight: 600; margin-top: 30px; opacity: 0; transform: scale(0.9);
+            transition: all 0.5s; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(12, 43, 94, 0.3);
+        }
+        #open-btn.ready { opacity: 1; transform: scale(1); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(12,43,94,0.4); } 70% { box-shadow: 0 0 0 15px rgba(12,43,94,0); } 100% { box-shadow: 0 0 0 0 rgba(12,43,94,0); } }
 
         .swal2-popup { background: #ffffff !important; color: #1e293b !important; border-radius: 20px !important; }
         .swal2-title { color: #0f172a !important; }
-        .custom-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 10px; outline: none; transition: border 0.3s; }
-        .custom-input:focus { border-color: #3b82f6; }
+        .custom-input { width: 90% !important; margin: 0 auto 10px auto !important; }
     </style>
 </head>
 <body>
@@ -99,10 +107,9 @@
                 <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Preparing Invitation...
             </p>
         </div>
-        <div id="scroll-hint" class="hidden flex-col items-center animate-bounce text-slate-800 mt-10 transition-opacity duration-300">
-            <span class="text-xs font-bold mb-1 tracking-widest uppercase">Tap to View</span>
-            <i data-lucide="chevron-up" class="w-6 h-6"></i>
-        </div>
+        <button id="open-btn" onclick="startExperience()" style="display: none;">
+            <i data-lucide="mail-open" class="w-5 h-5"></i> Tap to Open Invitation
+        </button>
     </div>
 
     <div id="invitation-viewport">
@@ -112,7 +119,7 @@
 
         <div id="touch-layer"></div>
 
-        <button id="control-btn" onclick="toggleMedia()"><i data-lucide="pause" id="control-icon" class="w-5 h-5"></i></button>
+        <button id="replay-btn" onclick="replayVideo()"><i data-lucide="rotate-ccw" class="w-6 h-6"></i></button>
 
         <div id="map-icon-link" class="overlay-box">
             <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="map-anchor"></a>
@@ -121,16 +128,15 @@
             <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="map-anchor"></a>
         </div>
 
-        <div id="rsvp-input-container" class="overlay-box" onclick="openGroupMessagePopup()">
+        <div id="rsvp-input-container" class="overlay-box click-area" onclick="openGroupMessagePopup()">
             <div class="glass-panel" id="msg-panel">
-                <span class="msg-text" id="msg-display">Tap to leave a wish...</span>
+                <span class="msg-text" id="msg-display">Tap to add a wish...</span>
             </div>
         </div>
 
-        <!-- Call RSVP Button -->
         <div id="rsvp-btn-container" class="overlay-box click-area">
-            <button id="rsvp-btn" onclick="handleGroupRSVP()">
-                <i data-lucide="phone-call" class="w-4 h-4"></i> RSVP (Call)
+            <button id="rsvp-btn" onclick="handleGroupCall()">
+                <i data-lucide="phone" class="w-4 h-4"></i> RSVP (Call)
             </button>
         </div>
 
@@ -144,18 +150,15 @@
     <script>
         lucide.createIcons();
 
-        const TIMES = {
-            MAP_LINKS: 4.2,   
-            RSVP_FORMS: 8.5   
-        };
-
+        const TIMES = { MAP_LINKS: 4.2, RSVP_FORMS: 8.5 };
+        // 🔴 අලුත් SCRIPT URL එක මෙතන තියෙනවා
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz-RcIL7t3MyfXE5qcQMjoW9YiNWjpTYFuSaA8D9DUrS_sH8RrPASeAfzBuLemH8d9Y4g/exec';
         
         const video = document.getElementById('main-video');
         const bgm = document.getElementById('bgm');
         const loader = document.getElementById('loader');
+        const openBtn = document.getElementById('open-btn');
         const loadingAnim = document.getElementById('loading-animation');
-        const scrollHint = document.getElementById('scroll-hint');
         const touchLayer = document.getElementById('touch-layer');
         
         const mapIconBox = document.getElementById('map-icon-link');
@@ -163,103 +166,85 @@
         const inputBox = document.getElementById('rsvp-input-container');
         const btnBox = document.getElementById('rsvp-btn-container');
         const footer = document.getElementById('footer-container');
-        
-        const controlBtn = document.getElementById('control-btn');
-        const controlIcon = document.getElementById('control-icon');
+        const replayBtn = document.getElementById('replay-btn');
         const msgDisplay = document.getElementById('msg-display');
         
         let isFinished = false;
-        let isPlaying = false;
         let messageSent = false;
 
-        // 🔴 NEW: Track Group Link Open when page loads
         window.addEventListener('load', () => {
+            // Track group open silently
             fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'trackGroupOpen' }) });
             
             video.addEventListener('canplaythrough', () => {
                 setTimeout(() => {
                     loadingAnim.style.display = 'none';
-                    scrollHint.classList.remove('hidden');
-                    scrollHint.style.display = 'flex';
+                    openBtn.style.display = 'flex';
+                    setTimeout(() => openBtn.classList.add('ready'), 50);
                 }, 1000);
             });
             video.load();
         });
 
-        const startApp = () => {
+        function startExperience() {
             loader.style.opacity = '0';
             setTimeout(() => {
                 loader.style.display = 'none';
                 video.play(); bgm.play();
-                isPlaying = true;
-                controlBtn.classList.add('visible');
-            }, 500);
-            
-            // Remove the start listener so it doesn't trigger again
-            document.removeEventListener('mousedown', startApp);
-            document.removeEventListener('touchstart', startApp);
-        };
-
-        document.addEventListener('mousedown', startApp);
-        document.addEventListener('touchstart', startApp, {passive: true});
+            }, 800);
+        }
 
         video.addEventListener('timeupdate', () => {
             const t = video.currentTime;
-
             if (t > TIMES.MAP_LINKS) { mapIconBox.classList.add('visible'); mapTextBox.classList.add('visible'); } 
             if (t > TIMES.RSVP_FORMS) { inputBox.classList.add('visible'); btnBox.classList.add('visible'); } 
 
             if (t >= video.duration - 0.2 && !isFinished) {
                 isFinished = true;
-                isPlaying = false;
                 video.pause(); bgm.pause();
-                
-                updateControlIcon('rotate-ccw'); // Change to replay icon
-                setTimeout(() => footer.classList.add('visible'), 300);
+                setTimeout(() => { replayBtn.classList.add('visible'); footer.classList.add('visible'); }, 300);
             }
         });
 
-        function toggleMedia() {
-            if (isFinished) {
-                // Replay
-                isFinished = false;
-                footer.classList.remove('visible');
-                mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible');
-                inputBox.classList.remove('visible'); btnBox.classList.remove('visible');
-                
-                video.currentTime = 0; bgm.currentTime = 0;
-                video.play(); bgm.play();
-                isPlaying = true;
-                updateControlIcon('pause');
-            } else {
-                if (isPlaying) { video.pause(); bgm.pause(); isPlaying = false; updateControlIcon('play'); } 
-                else { video.play(); bgm.play(); isPlaying = true; updateControlIcon('pause'); }
-        // 🔴 NEW: Track Call Button Click
-        function handleGroupRSVP() {
-            // Send tracking signal to Google Sheet silently
-            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'trackGroupRSVP' }) });
-            // Redirect to call phone number
-            setTimeout(() => { window.location.href = 'tel:+94762260519'; }, 300);
+        function replayVideo() {
+            isFinished = false;
+            replayBtn.classList.remove('visible'); footer.classList.remove('visible');
+            mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible');
+            inputBox.classList.remove('visible'); btnBox.classList.remove('visible');
+            video.currentTime = 0; bgm.currentTime = 0;
+            video.play(); bgm.play();
         }
 
-        // 🟢 New Feature: Group Message Popup (Name + Message)
+        // Hold to pause logic
+        const pauseMedia = () => { if(!isFinished) { video.pause(); bgm.pause(); } };
+        const playMedia = () => { if(!isFinished) { video.play(); bgm.play(); } };
+        touchLayer.addEventListener('mousedown', pauseMedia);
+        touchLayer.addEventListener('mouseup', playMedia);
+        touchLayer.addEventListener('touchstart', pauseMedia, {passive: true});
+        touchLayer.addEventListener('touchend', playMedia);
+
+        // Group Call RSVP
+        function handleGroupCall() {
+            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'trackGroupRSVP' }) });
+            window.location.href = 'tel:+94762260519';
+        }
+
+        // Group Message (Name + Message)
         function openGroupMessagePopup() {
             if (messageSent) return;
 
             Swal.fire({
                 title: 'Leave a Wish',
                 html: `
-                    <input id="swal-input-name" class="custom-input" placeholder="Your Name (e.g. Nimal)" required>
-                    <textarea id="swal-input-msg" class="custom-input" rows="3" placeholder="Type your message here..." required></textarea>
+                    <input id="swal-input-name" class="swal2-input custom-input" placeholder="Your Name (e.g. Nimal)" required>
+                    <textarea id="swal-input-msg" class="swal2-textarea custom-input" placeholder="Type your message here..." style="height: 100px;" required></textarea>
                 `,
-                showCancelButton: true,
-                confirmButtonText: 'Send',
-                confirmButtonColor: '#0c2b5e',
+                showCancelButton: true, confirmButtonText: 'Send Message', confirmButtonColor: '#0c2b5e',
                 customClass: { popup: 'swal2-popup' },
                 preConfirm: () => {
                     const name = document.getElementById('swal-input-name').value.trim();
                     const msg = document.getElementById('swal-input-msg').value.trim();
-                    if (!name || !msg) { Swal.showValidationMessage('Please enter both name and message'); return false; }
+                    if (!name || !msg) { Swal.showValidationMessage('Please enter both Name and Message'); return false; }
                     return { name: name, message: msg };
                 }
             }).then((res) => {
@@ -274,18 +259,14 @@
             msgDisplay.style.color = '#0c2b5e';
             lucide.createIcons();
 
-            const params = new URLSearchParams({ 
-                action: 'addGroupMessage', 
-                name: name, 
-                message: msg 
-            });
-
             try {
-                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', mode: 'no-cors', 
+                    body: new URLSearchParams({ action: 'addGroupMessage', name: name, message: msg }) 
+                });
                 
-                // Success UI
                 messageSent = true;
-                msgDisplay.innerHTML = `<span class="text-emerald-700 font-bold"><i data-lucide="check" class="w-4 h-4 inline"></i> Message Sent!</span>`;
+                msgDisplay.innerHTML = `<span class="text-emerald-700 font-bold"><i data-lucide="check" class="w-4 h-4 inline"></i> Message Sent</span>`;
                 document.getElementById('rsvp-input-container').style.pointerEvents = 'none';
                 lucide.createIcons();
             } catch(e) {
