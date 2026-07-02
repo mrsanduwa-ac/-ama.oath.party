@@ -15,32 +15,34 @@
 
     <style>
         body, html {
-            margin: 0; padding: 0; background-color: #121212; 
-            font-family: 'Inter', sans-serif; overflow-x: hidden; scroll-behavior: smooth;
+            margin: 0; padding: 0; background-color: #000; 
+            font-family: 'Inter', sans-serif; overflow: hidden; height: 100%; width: 100%;
         }
 
-        /* Facebook Style Skeleton Loader */
+        /* Initial Loader */
         #loader {
-            position: fixed; inset: 0; background: #e5dfd3; z-index: 1000;
+            position: fixed; inset: 0; background: #e5dfd3; z-index: 9999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 0.8s ease;
         }
 
-        #scroll-container { height: 450vh; position: relative; }
-
-        #invitation-viewport {
-            position: fixed; top: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 450px; height: 100vh; background-color: #000;
-            overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10;
+        /* Perfect 9:16 Video Container (Prevents Cropping) */
+        #media-container {
+            position: relative;
+            background-color: #000;
+            margin: 0 auto;
+            /* Dimensions set perfectly via JS */
         }
 
-        #main-video { width: 100%; height: 100%; object-fit: cover; }
+        #main-video {
+            width: 100%; height: 100%; object-fit: contain;
+        }
 
         /* Dynamic Overlay Elements */
         .overlay-box {
             position: absolute; opacity: 0; pointer-events: none;
-            transition: opacity 0.6s ease, transform 0.6s ease;
-            transform: translateY(20px); z-index: 50;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateY(15px); z-index: 50;
         }
         .overlay-box.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
@@ -49,9 +51,9 @@
             top: 57%; left: 12%; width: 76%; height: 16%;
         }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px);
-            border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%; height: 100%; padding: 15px; border: 1px solid rgba(255,255,255,0.5);
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);
+            border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%; height: 100%; padding: 15px; border: 1px solid rgba(255,255,255,0.6);
         }
         #rsvp-message {
             width: 100%; height: 100%; background: transparent; border: none; outline: none;
@@ -65,201 +67,232 @@
         #rsvp-btn {
             width: 100%; height: 100%; background-color: #1e3a8a; color: white;
             border: none; border-radius: 50px; font-weight: 600; font-size: 1rem;
-            cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.4);
+            cursor: pointer; transition: all 0.3s; box-shadow: 0 6px 20px rgba(30, 58, 138, 0.5);
             display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         #rsvp-btn:active { transform: scale(0.96); }
-        #rsvp-btn:disabled { cursor: not-allowed; transform: none; }
+        #rsvp-btn:disabled { cursor: not-allowed; transform: none; background-color: #059669; }
 
-        #map-link-container { top: 44.5%; left: 63%; width: 14%; height: 6%; }
+        /* 🔴 අලුතෙන් දාපු මැප් ලින්ක් දෙකේ CSS */
+        #map-icon-link { top: 43.5%; left: 63%; width: 14%; height: 6%; }
+        #map-text-link { top: 51%; left: 15%; width: 70%; height: 5%; }
         
-        #footer-container {
-            position: absolute; bottom: 15px; width: 100%; text-align: center;
-            font-size: 0.7rem; color: rgba(255,255,255,0.8); z-index: 60;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9); font-weight: 600;
-        }
-        #footer-container a { color: #93c5fd; text-decoration: none; }
-
-        /* Scroll Indicator */
-        #scroll-hint { transition: opacity 0.3s; }
-        .hidden-hint { opacity: 0; pointer-events: none; }
-
         /* Edit Mode Styles */
         .edit-mode .overlay-box { border: 2px dashed #3b82f6 !important; background: rgba(59, 130, 246, 0.2); cursor: move; opacity: 0.9 !important; pointer-events: auto !important; }
-        #editor-hud { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); color: #38bdf8; padding: 15px; font-family: monospace; font-size: 11px; z-index: 1000; display: none; }
+        #editor-hud { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); color: #38bdf8; padding: 15px; font-family: monospace; font-size: 11px; z-index: 9000; display: none; }
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center">
 
-    <!-- 1. Facebook Style Loader -->
+    <!-- Loading Skeleton -->
     <div id="loader">
         <div class="w-32 h-64 bg-slate-300 rounded-lg mb-8 opacity-50 animate-pulse"></div>
         <div class="w-3/4 h-6 bg-slate-300 rounded mb-4 opacity-50 animate-pulse"></div>
         <div class="w-1/2 h-4 bg-slate-300 rounded mb-12 opacity-50 animate-pulse"></div>
-        <p class="text-slate-500 font-medium mt-6 text-sm flex items-center gap-2">
+        <p class="text-slate-600 font-semibold mt-6 text-sm flex items-center gap-2">
             <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Preparing Invitation...
         </p>
     </div>
 
-    <!-- Scroll Track -->
-    <div id="scroll-container">
+    <!-- Main App Container (JS dynamically sets to exactly 9:16) -->
+    <div id="media-container">
         
-        <div id="invitation-viewport">
-            
-            <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline muted></video>
+        <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline muted loop></video>
 
-            <!-- Scroll Hint -->
-            <div id="scroll-hint" class="absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce text-white z-40 drop-shadow-lg">
-                <span class="text-[10px] font-bold mb-1 tracking-[0.2em] uppercase">Scroll</span>
-                <i data-lucide="chevron-down" class="w-6 h-6"></i>
+        <!-- Touch layer for Play/Pause -->
+        <div id="touch-layer" class="absolute inset-0 z-10 cursor-pointer" title="Tap to Pause/Play"></div>
+
+        <!-- Pause Indicator (Shows when video is paused) -->
+        <div id="pause-indicator" class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300">
+            <div class="bg-black/60 p-5 rounded-full backdrop-blur-md shadow-2xl">
+                <i data-lucide="pause" class="w-12 h-12 text-white"></i>
             </div>
-
-            <!-- Map Link -->
-            <div id="map-link-container" class="overlay-box click-area">
-                <!-- PUT GOOGLE MAPS LINK HERE -->
-                <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="block w-full h-full"></a>
-            </div>
-
-            <!-- Custom Message Box (HTML UI) -->
-            <div id="rsvp-input-container" class="overlay-box">
-                <div class="glass-panel">
-                    <textarea id="rsvp-message" placeholder="Add any text or wish... (Press Enter)"></textarea>
-                </div>
-            </div>
-
-            <!-- RSVP Button (HTML UI) -->
-            <div id="rsvp-btn-container" class="overlay-box">
-                <button id="rsvp-btn" onclick="openRSVPModal()">RSVP</button>
-            </div>
-
-            <!-- Footer Watermark -->
-            <div id="footer-container">
-                Powered by <a href="https://www.facebook.com/sandu.malli2/" target="_blank">CRAFTGRID</a><br>
-                © 2026 All Right Reserved | Sandusha Avishkha
-            </div>
-
         </div>
+
+        <!-- Replay Button -->
+        <button onclick="replayVideo()" class="absolute top-5 right-5 z-40 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur-md border border-white/20 shadow-xl transition-all active:scale-90" title="Replay Video">
+            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+        </button>
+
+        <!-- 🔴 අලුත් මැප් ලින්ක් දෙක මෙතන තියෙනවා -->
+        <!-- 1. Map Icon Link -->
+        <div id="map-icon-link" class="overlay-box z-30">
+            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="block w-full h-full cursor-pointer relative z-50"></a>
+        </div>
+        <!-- 2. Hotel Text Link -->
+        <div id="map-text-link" class="overlay-box z-30">
+            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="block w-full h-full cursor-pointer relative z-50"></a>
+        </div>
+
+        <!-- Custom Message Box -->
+        <div id="rsvp-input-container" class="overlay-box z-30">
+            <div class="glass-panel">
+                <textarea id="rsvp-message" placeholder="Add any text or wish... (Press Enter)"></textarea>
+            </div>
+        </div>
+
+        <!-- RSVP Button -->
+        <div id="rsvp-btn-container" class="overlay-box z-30">
+            <button id="rsvp-btn" onclick="openRSVPModal()">RSVP</button>
+        </div>
+
+        <!-- Watermark Blur Box -->
+        <div id="footer-container" class="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 w-[85%] text-center bg-black/60 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-2xl transition-all">
+            <span class="text-white/90 text-[10px] sm:text-xs font-medium tracking-wide">
+                Powered by <a href="https://www.facebook.com/sandu.malli2/" target="_blank" class="text-blue-400 font-bold hover:text-blue-300 transition-colors">CRAFTGRID</a><br>
+                <span class="mt-1 block opacity-70">© 2026 All Rights Reserved | Sandusha Avishkha</span>
+            </span>
+        </div>
+
     </div>
 
     <!-- Editor HUD -->
     <div id="editor-hud">
         <div class="flex justify-between items-center mb-2">
-            <strong class="text-white text-xs">🔴 LAYOUT DESIGN MODE ACTIVE (Drag boxes)</strong>
+            <strong class="text-white text-xs">🔴 LAYOUT DESIGN MODE</strong>
             <button onclick="copyLayoutCSS()" class="bg-blue-600 px-3 py-1 rounded text-white font-bold">Copy CSS</button>
         </div>
         <pre id="hud-css-output" class="text-emerald-400"></pre>
     </div>
 
+    <!-- Scripting Logic -->
     <script>
         lucide.createIcons();
 
-        // ==========================================
-        // PUT YOUR GOOGLE SCRIPT WEB APP URL HERE
-        // ==========================================
+        // Constants
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi0Nti2-5JTLZ_7LI5d1ROB0JHO7wkVHWJ4Vm5fHrQPxa8ubE9HAJNwLEaNY9M3gGszA/exec';
         
+        // Elements
         const video = document.getElementById('main-video');
         const loader = document.getElementById('loader');
-        const scrollHint = document.getElementById('scroll-hint');
+        const mediaContainer = document.getElementById('media-container');
+        const touchLayer = document.getElementById('touch-layer');
+        const pauseIndicator = document.getElementById('pause-indicator');
         
-        const mapBox = document.getElementById('map-link-container');
+        // 🔴 JS වලට මැප් දෙක ඇඩ් කරපු තැන
+        const mapIconBox = document.getElementById('map-icon-link');
+        const mapTextBox = document.getElementById('map-text-link');
         const inputBox = document.getElementById('rsvp-input-container');
         const btnBox = document.getElementById('rsvp-btn-container');
-        
         const msgInput = document.getElementById('rsvp-message');
         const rsvpBtn = document.getElementById('rsvp-btn');
         
         let guestId = '';
         let guestData = { name: 'Valued Guest', rsvp: 'Pending', message: '' };
-
-        // Lerp Variables for Apple-style Scrolling
-        let targetProgress = 0, currentProgress = 0;
-        const easeFactor = 0.08; 
         const isEditMode = new URLSearchParams(window.location.search).get('edit') === 'true';
 
+        // --- 1. Perfect Screen Sizing Logic (No Cropping!) ---
+        function fitVideoContainer() {
+            const windowW = window.innerWidth;
+            const windowH = window.innerHeight;
+            const videoRatio = 9 / 16;
+            
+            let targetW, targetH;
+            
+            if (windowW / windowH > videoRatio) {
+                targetH = windowH;
+                targetW = targetH * videoRatio;
+            } else {
+                targetW = windowW;
+                targetH = targetW / videoRatio;
+            }
+
+            // Max width constraint for desktop view
+            if (targetW > 450) {
+                targetW = 450;
+                targetH = targetW / videoRatio;
+            }
+
+            mediaContainer.style.width = targetW + 'px';
+            mediaContainer.style.height = targetH + 'px';
+        }
+        window.addEventListener('resize', fitVideoContainer);
+        fitVideoContainer(); // Run on load
+
+        // --- 2. Initial Setup & Data Fetch ---
         window.addEventListener('load', async () => {
             guestId = new URLSearchParams(window.location.search).get('id');
 
-            // 1. Fetch Guest Data & Sync Status
             if (guestId) {
                 try {
                     const res = await fetch(`${SCRIPT_URL}?action=getGuest&id=${guestId}`);
                     const data = await res.json();
                     if (data && data.name) {
                         guestData = data;
-                        
-                        // Check if already RSVP'd or Messaged, lock the UI if so!
                         checkAndLockUI();
-
                         fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'markOpened', id: guestId }) });
                     }
                 } catch(e) { console.log("Guest fetch error"); }
             }
 
-            // Remove loader when video is ready
+            // Play video automatically when loaded
             video.addEventListener('canplaythrough', () => {
                 setTimeout(() => {
                     loader.style.opacity = '0';
-                    setTimeout(() => {
-                        loader.style.display = 'none';
-                        tick(); // Start scrolling logic
-                    }, 800);
+                    video.play().catch(e => console.log("Autoplay blocked. User needs to tap."));
+                    setTimeout(() => loader.style.display = 'none', 800);
                 }, 1000);
             });
             video.load();
         });
 
-        // Lock UI if already submitted
+        // --- 3. Playback Controls ---
+        touchLayer.addEventListener('click', () => {
+            if(video.paused) {
+                video.play();
+                pauseIndicator.style.opacity = '0';
+            } else {
+                video.pause();
+                pauseIndicator.style.opacity = '1';
+            }
+        });
+
+        function replayVideo() {
+            video.currentTime = 0;
+            video.play();
+            pauseIndicator.style.opacity = '0';
+        }
+
+        // --- 4. Timed Overlays ---
+        video.addEventListener('timeupdate', () => {
+            const t = video.currentTime;
+            
+            if(isEditMode) return; // Keep all visible in edit mode
+
+            // 🔴 තත්පර 4.5 දී මැප් දෙකම පේන්න ගන්නවා
+            if (t > 4.5 && t < 11.5) {
+                mapIconBox.classList.add('visible');
+                mapTextBox.classList.add('visible');
+            } else {
+                mapIconBox.classList.remove('visible');
+                mapTextBox.classList.remove('visible');
+            }
+
+            // Show RSVP stuff near the end (e.g., 9s mark)
+            if (t > 8.5) {
+                inputBox.classList.add('visible');
+                btnBox.classList.add('visible');
+            } else {
+                inputBox.classList.remove('visible');
+                btnBox.classList.remove('visible');
+            }
+        });
+
+        // --- 5. UI Logic & Sheet Sync ---
         function checkAndLockUI() {
             if (guestData.rsvp === 'Attending' || guestData.rsvp === 'Not_Attending') {
                 rsvpBtn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i> Thank You!`;
-                rsvpBtn.className = "w-full h-full bg-emerald-600 text-white border-none rounded-full font-bold text-lg flex justify-center items-center gap-2 shadow-lg";
                 rsvpBtn.disabled = true;
                 lucide.createIcons();
             }
             if (guestData.message && guestData.message.trim() !== '') {
                 msgInput.value = "Your message has been sent!";
                 msgInput.disabled = true;
-                msgInput.style.color = "#059669"; // Emerald 600
+                msgInput.style.color = "#047857"; 
                 msgInput.style.fontWeight = "600";
             }
         }
 
-        // Scroll Sync Logic
-        window.addEventListener('scroll', () => {
-            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-            if (scrollHeight <= 0) return;
-            targetProgress = window.scrollY / scrollHeight;
-        });
-
-        function tick() {
-            currentProgress += (targetProgress - currentProgress) * easeFactor;
-            currentProgress = Math.max(0, Math.min(1, currentProgress));
-
-            if (video.duration) video.currentTime = currentProgress * video.duration;
-
-            // Hide scroll hint when they start scrolling
-            if (currentProgress > 0.03) scrollHint.classList.add('hidden-hint');
-            else scrollHint.classList.remove('hidden-hint');
-
-            if (isEditMode) {
-                mapBox.classList.add('visible'); inputBox.classList.add('visible'); btnBox.classList.add('visible');
-            } else {
-                // Show Map at ~40% scroll (approx 5 seconds)
-                if (currentProgress > 0.40) mapBox.classList.add('visible');
-                else mapBox.classList.remove('visible');
-
-                // Show forms at ~75% scroll (approx 9 seconds)
-                if (currentProgress > 0.75) {
-                    inputBox.classList.add('visible'); btnBox.classList.add('visible');
-                } else {
-                    inputBox.classList.remove('visible'); btnBox.classList.remove('visible');
-                }
-            }
-            requestAnimationFrame(tick);
-        }
-
-        // Message Submit (Enter Key)
         msgInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault(); 
@@ -267,13 +300,11 @@
             }
         });
 
-        // RSVP Modal Popup
         function openRSVPModal() {
             if (!guestId) {
                 Swal.fire({ icon: 'warning', title: 'Invalid Link', text: 'Please open using a valid invitation link.' });
                 return;
             }
-
             const displayName = `${guestData.title || ''} ${guestData.name}`;
 
             Swal.fire({
@@ -305,17 +336,13 @@
             });
         }
 
-        // Send Data to Google Sheets
         async function sendRSVPData(type, val) {
             Swal.fire({ title: 'Updating...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
             const params = new URLSearchParams({ action: 'updateRSVP', id: guestId });
             params.append(type === 'message' ? 'message' : 'rsvp', val);
 
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
-                
-                // Update local state and lock UI
                 if (type === 'message') guestData.message = val;
                 if (type === 'rsvp') guestData.rsvp = val;
                 checkAndLockUI();
@@ -323,18 +350,19 @@
                 Swal.fire({
                     icon: 'success', title: 'Thank You!',
                     text: type === 'message' ? 'Your message has been sent successfully.' : 'Your RSVP status has been updated.',
-                    confirmButtonColor: '#059669' // Emerald color for success
+                    confirmButtonColor: '#059669'
                 });
             } catch(e) {
                 Swal.fire({ icon: 'error', title: 'Failed', text: 'Please try again.' });
             }
         }
 
-        // --- Drag & Drop Edit Mode Logic ---
+        // --- 6. Drag & Drop Edit Mode ---
         if (isEditMode) {
             document.body.classList.add('edit-mode');
             document.getElementById('editor-hud').style.display = 'block';
-            [mapBox, inputBox, btnBox].forEach(box => {
+            [mapIconBox, mapTextBox, inputBox, btnBox].forEach(box => {
+                box.classList.add('visible'); // keep visible
                 box.addEventListener('mousedown', (e) => {
                     if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
                     let selectedEl = box;
@@ -352,13 +380,13 @@
                 document.getElementById('hud-css-output').innerText = 
 `#rsvp-input-container { top: ${inputBox.style.top || '57%'}; left: ${inputBox.style.left || '12%'}; }
 #rsvp-btn-container { top: ${btnBox.style.top || '76%'}; left: ${btnBox.style.left || '15%'}; }
-#map-link-container { top: ${mapBox.style.top || '44.5%'}; left: ${mapBox.style.left || '63%'}; }`;
+#map-icon-link { top: ${mapIconBox.style.top || '43.5%'}; left: ${mapIconBox.style.left || '63%'}; }
+#map-text-link { top: ${mapTextBox.style.top || '51%'}; left: ${mapTextBox.style.left || '15%'}; }`;
             }
             updateCSS();
         }
         function copyLayoutCSS() {
-            navigator.clipboard.writeText(document.getElementById('hud-css-output').innerText)
-            .then(() => alert("Copied! Paste into the <style> section."));
+            navigator.clipboard.writeText(document.getElementById('hud-css-output').innerText).then(() => alert("Copied!"));
         }
     </script>
 </body>
