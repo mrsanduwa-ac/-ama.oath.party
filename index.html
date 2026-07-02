@@ -26,12 +26,11 @@
             transition: opacity 0.8s ease;
         }
 
-        /* Perfect 9:16 Video Container (Prevents Cropping) */
+        /* Perfect 9:16 Video Container */
         #media-container {
             position: relative;
             background-color: #000;
             margin: 0 auto;
-            /* Dimensions set perfectly via JS */
         }
 
         #main-video {
@@ -47,9 +46,7 @@
         .overlay-box.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
         /* Custom HTML UI for Input & Button */
-        #rsvp-input-container {
-            top: 57%; left: 12%; width: 76%; height: 16%;
-        }
+        #rsvp-input-container { top: 57%; left: 12%; width: 76%; height: 16%; }
         .glass-panel {
             background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);
             border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -61,9 +58,7 @@
         }
         #rsvp-message::placeholder { color: #94a3b8; font-style: italic; }
 
-        #rsvp-btn-container {
-            top: 76%; left: 15%; width: 70%; height: 6%;
-        }
+        #rsvp-btn-container { top: 76%; left: 15%; width: 70%; height: 6%; }
         #rsvp-btn {
             width: 100%; height: 100%; background-color: #1e3a8a; color: white;
             border: none; border-radius: 50px; font-weight: 600; font-size: 1rem;
@@ -73,7 +68,7 @@
         #rsvp-btn:active { transform: scale(0.96); }
         #rsvp-btn:disabled { cursor: not-allowed; transform: none; background-color: #059669; }
 
-        /* 🔴 අලුතෙන් දාපු මැප් ලින්ක් දෙකේ CSS */
+        /* Map Links */
         #map-icon-link { top: 43.5%; left: 63%; width: 14%; height: 6%; }
         #map-text-link { top: 51%; left: 15%; width: 70%; height: 5%; }
         
@@ -94,10 +89,11 @@
         </p>
     </div>
 
-    <!-- Main App Container (JS dynamically sets to exactly 9:16) -->
+    <!-- Main App Container -->
     <div id="media-container">
         
-        <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline muted loop></video>
+        <!-- වීඩියෝ එකේ Loop එක අයින් කරා. එක පාරයි ප්ලේ වෙන්නේ. -->
+        <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline muted></video>
 
         <!-- Touch layer for Play/Pause -->
         <div id="touch-layer" class="absolute inset-0 z-10 cursor-pointer" title="Tap to Pause/Play"></div>
@@ -109,17 +105,15 @@
             </div>
         </div>
 
-        <!-- Replay Button -->
-        <button onclick="replayVideo()" class="absolute top-5 right-5 z-40 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur-md border border-white/20 shadow-xl transition-all active:scale-90" title="Replay Video">
+        <!-- Replay Button (Hidden initially, shows after video ends) -->
+        <button id="replay-btn" onclick="replayVideo()" class="absolute top-5 right-5 z-40 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur-md border border-white/20 shadow-xl transition-all active:scale-90 opacity-0 pointer-events-none duration-500" title="Replay Video">
             <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
         </button>
 
-        <!-- 🔴 අලුත් මැප් ලින්ක් දෙක මෙතන තියෙනවා -->
-        <!-- 1. Map Icon Link -->
+        <!-- Map Links -->
         <div id="map-icon-link" class="overlay-box z-30">
             <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="block w-full h-full cursor-pointer relative z-50"></a>
         </div>
-        <!-- 2. Hotel Text Link -->
         <div id="map-text-link" class="overlay-box z-30">
             <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="block w-full h-full cursor-pointer relative z-50"></a>
         </div>
@@ -136,8 +130,8 @@
             <button id="rsvp-btn" onclick="openRSVPModal()">RSVP</button>
         </div>
 
-        <!-- Watermark Blur Box -->
-        <div id="footer-container" class="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 w-[85%] text-center bg-black/60 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-2xl transition-all">
+        <!-- Watermark Blur Box (Hidden initially, shows after video ends) -->
+        <div id="footer-container" class="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 w-[85%] text-center bg-black/60 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-2xl opacity-0 pointer-events-none transition-all duration-700">
             <span class="text-white/90 text-[10px] sm:text-xs font-medium tracking-wide">
                 Powered by <a href="https://www.facebook.com/sandu.malli2/" target="_blank" class="text-blue-400 font-bold hover:text-blue-300 transition-colors">CRAFTGRID</a><br>
                 <span class="mt-1 block opacity-70">© 2026 All Rights Reserved | Sandusha Avishkha</span>
@@ -155,7 +149,6 @@
         <pre id="hud-css-output" class="text-emerald-400"></pre>
     </div>
 
-    <!-- Scripting Logic -->
     <script>
         lucide.createIcons();
 
@@ -168,8 +161,9 @@
         const mediaContainer = document.getElementById('media-container');
         const touchLayer = document.getElementById('touch-layer');
         const pauseIndicator = document.getElementById('pause-indicator');
+        const replayBtn = document.getElementById('replay-btn');
+        const footerContainer = document.getElementById('footer-container');
         
-        // 🔴 JS වලට මැප් දෙක ඇඩ් කරපු තැන
         const mapIconBox = document.getElementById('map-icon-link');
         const mapTextBox = document.getElementById('map-text-link');
         const inputBox = document.getElementById('rsvp-input-container');
@@ -181,7 +175,7 @@
         let guestData = { name: 'Valued Guest', rsvp: 'Pending', message: '' };
         const isEditMode = new URLSearchParams(window.location.search).get('edit') === 'true';
 
-        // --- 1. Perfect Screen Sizing Logic (No Cropping!) ---
+        // --- 1. Perfect Screen Sizing Logic ---
         function fitVideoContainer() {
             const windowW = window.innerWidth;
             const windowH = window.innerHeight;
@@ -197,7 +191,6 @@
                 targetH = targetW / videoRatio;
             }
 
-            // Max width constraint for desktop view
             if (targetW > 450) {
                 targetW = 450;
                 targetH = targetW / videoRatio;
@@ -207,7 +200,7 @@
             mediaContainer.style.height = targetH + 'px';
         }
         window.addEventListener('resize', fitVideoContainer);
-        fitVideoContainer(); // Run on load
+        fitVideoContainer();
 
         // --- 2. Initial Setup & Data Fetch ---
         window.addEventListener('load', async () => {
@@ -225,11 +218,10 @@
                 } catch(e) { console.log("Guest fetch error"); }
             }
 
-            // Play video automatically when loaded
             video.addEventListener('canplaythrough', () => {
                 setTimeout(() => {
                     loader.style.opacity = '0';
-                    video.play().catch(e => console.log("Autoplay blocked. User needs to tap."));
+                    video.play().catch(e => console.log("Autoplay blocked"));
                     setTimeout(() => loader.style.display = 'none', 800);
                 }, 1000);
             });
@@ -238,6 +230,8 @@
 
         // --- 3. Playback Controls ---
         touchLayer.addEventListener('click', () => {
+            if (video.ended) return; // වීඩියෝ එක ඉවර නම් ටච් කරාට ප්ලේ වෙන්නේ නෑ
+            
             if(video.paused) {
                 video.play();
                 pauseIndicator.style.opacity = '0';
@@ -247,35 +241,46 @@
             }
         });
 
+        // වීඩියෝ එක ඉවර වුණාම Footer එකයි Replay බටන් එකයි පෙන්නනවා
+        video.addEventListener('ended', () => {
+            replayBtn.classList.remove('opacity-0', 'pointer-events-none');
+            footerContainer.classList.remove('opacity-0', 'pointer-events-none');
+            pauseIndicator.style.opacity = '0';
+        });
+
         function replayVideo() {
+            replayBtn.classList.add('opacity-0', 'pointer-events-none');
+            footerContainer.classList.add('opacity-0', 'pointer-events-none');
             video.currentTime = 0;
             video.play();
-            pauseIndicator.style.opacity = '0';
         }
 
-        // --- 4. Timed Overlays ---
+        // --- 4. Timed Overlays (🔴 මෙතනින් ටයිම් වෙනස් කරන්න) ---
         video.addEventListener('timeupdate', () => {
             const t = video.currentTime;
+            if(isEditMode) return; 
+
+            // ==============================================================
+            // 🔴 MAP LINKS පෙන්නන වෙලාව
+            const mapAppearTime = 4.5;
+            const mapHideTime = 11.5;
             
-            if(isEditMode) return; // Keep all visible in edit mode
-
-            // 🔴 තත්පර 4.5 දී මැප් දෙකම පේන්න ගන්නවා
-            if (t > 4.5 && t < 11.5) {
-                mapIconBox.classList.add('visible');
-                mapTextBox.classList.add('visible');
+            if (t > mapAppearTime && t < mapHideTime) {
+                mapIconBox.classList.add('visible'); mapTextBox.classList.add('visible');
             } else {
-                mapIconBox.classList.remove('visible');
-                mapTextBox.classList.remove('visible');
+                mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible');
             }
 
-            // Show RSVP stuff near the end (e.g., 9s mark)
-            if (t > 8.5) {
-                inputBox.classList.add('visible');
-                btnBox.classList.add('visible');
+            // 🔴 RSVP & TEXT BOX පෙන්නන වෙලාව (දැනට තත්පර 10.5 දීලා තියෙන්නේ)
+            // මේක 11.0 වගේ කරලා තව පරක්කු කරන්න පුළුවන්
+            const rsvpAppearTime = 10.5;
+            
+            if (t > rsvpAppearTime) {
+                inputBox.classList.add('visible'); btnBox.classList.add('visible');
             } else {
-                inputBox.classList.remove('visible');
-                btnBox.classList.remove('visible');
+                inputBox.classList.remove('visible'); btnBox.classList.remove('visible');
             }
+            // ==============================================================
         });
 
         // --- 5. UI Logic & Sheet Sync ---
@@ -305,14 +310,18 @@
                 Swal.fire({ icon: 'warning', title: 'Invalid Link', text: 'Please open using a valid invitation link.' });
                 return;
             }
-            const displayName = `${guestData.title || ''} ${guestData.name}`;
+            
+            // 🔴 අලුත් Light Theme Popup එක සහ නම
+            const displayName = guestData.name !== 'Valued Guest' ? `${guestData.title || ''} ${guestData.name}` : 'Valued Guest';
 
             Swal.fire({
-                title: 'RSVP Confirmation',
+                title: '<h2 class="text-2xl font-bold text-slate-800">RSVP Confirmation</h2>',
+                background: '#ffffff', // Light background
+                color: '#1e293b',
                 html: `
-                    <div class="mb-5 mt-2">
-                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Invited Guest</p>
-                        <h4 class="text-xl font-bold text-blue-900">${displayName}</h4>
+                    <div class="mb-6 mt-2 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-inner">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-semibold">Invited Guest</p>
+                        <h4 class="text-xl font-bold text-blue-600">${displayName}</h4>
                     </div>
                     <div class="flex flex-col gap-3 text-left">
                         <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
@@ -325,7 +334,7 @@
                         </label>
                     </div>
                 `,
-                showCancelButton: true, confirmButtonText: 'Submit Response', confirmButtonColor: '#1e3a8a',
+                showCancelButton: true, confirmButtonText: 'Submit Response', confirmButtonColor: '#0f172a', cancelButtonColor: '#94a3b8',
                 preConfirm: () => {
                     const sel = document.querySelector('input[name="rsvp_st"]:checked');
                     if (!sel) { Swal.showValidationMessage('Please select an option'); return false; }
@@ -362,7 +371,7 @@
             document.body.classList.add('edit-mode');
             document.getElementById('editor-hud').style.display = 'block';
             [mapIconBox, mapTextBox, inputBox, btnBox].forEach(box => {
-                box.classList.add('visible'); // keep visible
+                box.classList.add('visible');
                 box.addEventListener('mousedown', (e) => {
                     if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
                     let selectedEl = box;
