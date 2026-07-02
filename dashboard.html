@@ -334,15 +334,18 @@
             lucide.createIcons(); // Re-initialize icons for new dynamic HTML
         }
 
+        // ==========================================
+        // 🔴 THIS IS WHERE THE LINK IS GENERATED
+        // ==========================================
         function generateLink(id) {
-            // Your actual deployed 3D site URL goes here
-            return `https://amaya-oaths.rsvp/invite?id=${id}`;
+            // Updated to your actual Github Pages site!
+            return `https://mrsanduwa-ac.github.io/-ama.oath.party/?id=${id}`;
         }
 
         // WhatsApp Share
         function shareViaWhatsApp(id, title, name) {
             const link = generateLink(id);
-            const message = `Hello ${title} ${name},\n\nYou are cordially invited to celebrate Amaya's Enrollment as an Attorney-at-Law of the Supreme Court of Sri Lanka! ✨🎓\n\nPlease view your personalized 3D invitation here:\n${link}\n\nWe look forward to celebrating with you!`;
+            const message = `Hello ${title} ${name},\n\nYou are cordially invited to celebrate Amaya's Enrollment as an Attorney-at-Law of the Supreme Court of Sri Lanka! ✨🎓\n\nPlease view your personalized invitation here:\n${link}\n\nWe look forward to celebrating with you!`;
             const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         }
