@@ -14,9 +14,7 @@
         body, html {
             margin: 0; padding: 0; background-color: #000; 
             font-family: 'Inter', sans-serif; overflow: hidden;
-            touch-action: none; /* Prevents pull-to-refresh */
-            -webkit-touch-callout: none; /* Disable long press on iOS */
-            -webkit-user-select: none; user-select: none; /* Disable text selection */
+            touch-action: none; -webkit-touch-callout: none; user-select: none;
         }
 
         #loader {
@@ -30,14 +28,11 @@
             height: 100dvh; margin: 0 auto; background-color: #000; overflow: hidden;
         }
 
-        /* CRITICAL: pointer-events: none completely hides that this is a video from the browser */
+        /* Video element locked down to look like an app layer */
         #main-video { 
             width: 100%; height: 100%; object-fit: cover; object-position: center; 
-            pointer-events: none; 
+            pointer-events: none; /* Crucial: Hides all video controls/behaviors */
         }
-
-        /* Invisible layer to handle touch-to-pause without blocking buttons */
-        #touch-layer { position: absolute; inset: 0; z-index: 10; }
 
         .overlay-box {
             position: absolute; opacity: 0; pointer-events: none;
@@ -46,10 +41,10 @@
         }
         .overlay-box.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
-        /* Premium Glass Box UI */
+        /* Custom HTML UI */
         #rsvp-input-container { top: 58%; left: 7.5%; width: 85%; height: 10%; }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
             border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 100%; height: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.8);
             display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -66,12 +61,10 @@
         #rsvp-btn:active { transform: scale(0.96); }
         #rsvp-btn:disabled { cursor: not-allowed; transform: none; }
 
-        /* Map Links - Guaranteed to work now */
         #map-icon-link { top: 35%; left: 70%; width: 18%; height: 8%; }
         #map-text-link { top: 45%; left: 15%; width: 70%; height: 6%; }
         .map-anchor { display: block; width: 100%; height: 100%; cursor: pointer; }
         
-        /* Blur Box Watermark */
         #footer-container {
             position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
             width: 80%; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.9); 
@@ -82,74 +75,84 @@
         #footer-container.visible { opacity: 1; pointer-events: auto; }
         #footer-container a { color: #93c5fd; text-decoration: none; font-weight: 700;}
 
-        /* Replay Button */
-        #replay-btn {
+        /* Top Right Glassy Control Button (Play/Pause/Replay) */
+        #media-control-btn {
             position: absolute; top: 20px; right: 20px; z-index: 100;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-            color: white; border: none; border-radius: 50%; width: 45px; height: 45px;
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.4); color: #ffffff;
+            border-radius: 50%; width: 45px; height: 45px;
             display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s ease; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            opacity: 0; transition: opacity 0.5s ease; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        #replay-btn.visible { opacity: 1; pointer-events: auto; }
+        #media-control-btn.visible { opacity: 1; pointer-events: auto; }
 
-        /* Open Button */
-        #open-btn {
-            background: #0c2b5e; color: white; padding: 12px 30px; border-radius: 50px;
-            font-weight: 600; margin-top: 30px; opacity: 0; transform: scale(0.9);
-            transition: all 0.5s; cursor: pointer; display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 15px rgba(12, 43, 94, 0.3);
+        /* Start Interaction Overlay */
+        #start-overlay {
+            position: absolute; inset: 0; z-index: 90;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            padding-bottom: 20%; background: transparent; cursor: pointer;
+            opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
         }
-        #open-btn.ready { opacity: 1; transform: scale(1); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(12,43,94,0.4); } 70% { box-shadow: 0 0 0 15px rgba(12,43,94,0); } 100% { box-shadow: 0 0 0 0 rgba(12,43,94,0); } }
+        #start-overlay.visible { opacity: 1; pointer-events: auto; }
+        .scroll-icon { animation: bounce 2s infinite; color: rgba(255,255,255,0.8); text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-20px); } 60% { transform: translateY(-10px); } }
 
-        .swal2-popup { background: #ffffff !important; color: #1e293b !important; border-radius: 20px !important; }
+        /* Force Light Theme in Swal2 (Overrides Dark Mode on Phones) */
+        .swal2-popup { background-color: #ffffff !important; color: #1e293b !important; border-radius: 20px !important; }
         .swal2-title { color: #0f172a !important; }
+        .swal2-html-container { color: #334155 !important; }
+        .swal2-radio span, .swal2-label { color: #1e293b !important; }
     </style>
 </head>
 <body>
 
+    <!-- Skeleton Loader (No Text) -->
     <div id="loader">
-        <div id="loading-animation">
-            <div class="w-24 h-48 bg-slate-200 rounded-lg mb-8 opacity-50 animate-pulse mx-auto"></div>
-            <p class="text-slate-500 font-medium text-sm flex items-center justify-center gap-2">
-                <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Preparing Invitation...
-            </p>
-        </div>
-        <button id="open-btn" onclick="startExperience()" style="display: none;">
-            <i data-lucide="mail-open" class="w-5 h-5"></i> Tap to Open Invitation
-        </button>
+        <div class="w-24 h-48 bg-slate-200 rounded-lg mb-8 opacity-50 animate-pulse mx-auto"></div>
+        <div class="w-48 h-6 bg-slate-200 rounded opacity-50 animate-pulse mx-auto"></div>
     </div>
 
+    <!-- Main Viewport -->
     <div id="invitation-viewport">
         
-        <!-- Video completely locked down from browser features -->
-        <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback"></video>
+        <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline muted></video>
         <audio id="bgm" src="song.mp3" loop></audio>
 
-        <!-- Touch layer for play/pause -->
-        <div id="touch-layer"></div>
-
-        <button id="replay-btn" onclick="replayVideo()"><i data-lucide="rotate-ccw" class="w-6 h-6"></i></button>
-
-        <!-- Map Links (Using Anchor tags for guaranteed clicks) -->
-        <div id="map-icon-link" class="overlay-box">
-            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="map-anchor"></a>
-        </div>
-        <div id="map-text-link" class="overlay-box">
-            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="map-anchor"></a>
+        <!-- Initial Interaction Overlay -->
+        <div id="start-overlay">
+            <div class="scroll-icon flex flex-col items-center">
+                <i data-lucide="chevrons-up" class="w-8 h-8 mb-2"></i>
+                <span class="text-xs font-bold uppercase tracking-widest">Swipe up to view</span>
+            </div>
         </div>
 
-        <div id="rsvp-input-container" class="overlay-box" onclick="openMessagePopup()">
-            <div class="glass-panel" id="msg-panel">
+        <!-- Glassy Top Right Controls -->
+        <button id="media-control-btn" onclick="toggleMedia()">
+            <i data-lucide="pause" id="media-icon" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Map Links -->
+        <div id="map-icon-link" class="overlay-box click-area">
+            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="map-anchor"></a>
+        </div>
+        <div id="map-text-link" class="overlay-box click-area">
+            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="map-anchor"></a>
+        </div>
+
+        <!-- HTML Message Box -->
+        <div id="rsvp-input-container" class="overlay-box click-area" onclick="openMessagePopup()">
+            <div class="glass-panel">
                 <span class="msg-text" id="msg-display">Tap to add a wish...</span>
             </div>
         </div>
 
-        <div id="rsvp-btn-container" class="overlay-box">
+        <!-- HTML RSVP Button -->
+        <div id="rsvp-btn-container" class="overlay-box click-area">
             <button id="rsvp-btn" onclick="openRSVPModal()">RSVP</button>
         </div>
 
+        <!-- Footer Watermark (Blur Box) -->
         <div id="footer-container">
             Powered by <a href="https://www.facebook.com/sandu.malli2/" target="_blank">CRAFTGRID</a><br>
             © 2026 All Right Reserved | Sandusha Avishkha
@@ -160,28 +163,26 @@
     <script>
         lucide.createIcons();
 
-        // =========================================================================
+        // 🔴 TIMES (In seconds)
         const TIMES = {
-            MAP_LINKS: 4.2,   // මැප් අයිකන් සහ හෝටල් නම පෙන්නන වෙලාව
-            RSVP_FORMS: 8.5   // RSVP බටන් එකයි Message එකයි පෙන්නන වෙලාව
+            MAP_LINKS: 4.2,
+            RSVP_FORMS: 8.5
         };
-        // =========================================================================
 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi0Nti2-5JTLZ_7LI5d1ROB0JHO7wkVHWJ4Vm5fHrQPxa8ubE9HAJNwLEaNY9M3gGszA/exec';
         
         const video = document.getElementById('main-video');
         const bgm = document.getElementById('bgm');
         const loader = document.getElementById('loader');
-        const openBtn = document.getElementById('open-btn');
-        const loadingAnim = document.getElementById('loading-animation');
-        const touchLayer = document.getElementById('touch-layer');
+        const startOverlay = document.getElementById('start-overlay');
+        const mediaControlBtn = document.getElementById('media-control-btn');
+        const mediaIcon = document.getElementById('media-icon');
         
         const mapIconBox = document.getElementById('map-icon-link');
         const mapTextBox = document.getElementById('map-text-link');
         const inputBox = document.getElementById('rsvp-input-container');
         const btnBox = document.getElementById('rsvp-btn-container');
         const footer = document.getElementById('footer-container');
-        const replayBtn = document.getElementById('replay-btn');
         
         const msgDisplay = document.getElementById('msg-display');
         const rsvpBtn = document.getElementById('rsvp-btn');
@@ -189,92 +190,111 @@
         let guestId = '';
         let guestData = { name: 'Valued Guest', rsvp: 'Pending', message: '' };
         let isFinished = false;
+        let isPlaying = false;
 
         window.addEventListener('load', async () => {
             guestId = new URLSearchParams(window.location.search).get('id');
 
+            // 🟢 FIXED: Fetching specific guest from the backend Array
             if (guestId) {
                 try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getGuest&id=${guestId}`);
-                    const data = await res.json();
-                    if (data && data.name) {
-                        guestData = data;
+                    const res = await fetch(SCRIPT_URL); // doGet returns array
+                    const guestsArray = await res.json();
+                    const guest = guestsArray.find(g => g.id === guestId);
+                    
+                    if (guest) {
+                        guestData = guest;
                         checkAndLockUI();
-                        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'markOpened', id: guestId }) });
+                        // Call exactly 'updateOpened' as per your backend code
+                        fetch(SCRIPT_URL, { 
+                            method: 'POST', 
+                            mode: 'no-cors', 
+                            body: new URLSearchParams({ action: 'updateOpened', id: guestId }) 
+                        });
                     }
-                } catch(e) {}
+                } catch(e) { console.log("Failed to fetch guest details."); }
             }
 
             video.addEventListener('canplaythrough', () => {
                 setTimeout(() => {
-                    loadingAnim.style.display = 'none';
-                    openBtn.style.display = 'flex';
-                    setTimeout(() => openBtn.classList.add('ready'), 50);
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                        startOverlay.classList.add('visible'); // Show Swipe Up instruction
+                    }, 800);
                 }, 1000);
             });
             video.load();
         });
 
-        function startExperience() {
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-                video.play();
-                bgm.play();
-            }, 800);
-        }
+        // Start Experience on first touch/swipe anywhere
+        startOverlay.addEventListener('pointerdown', () => {
+            startOverlay.classList.remove('visible');
+            video.play();
+            bgm.play();
+            isPlaying = true;
+            mediaControlBtn.classList.add('visible'); // Show control button
+        });
 
-        // 🟢 Video Timeline Logic - FIXED: Elements do not disappear at the end!
+        // 🟢 Video Timeline Logic
         video.addEventListener('timeupdate', () => {
             const t = video.currentTime;
 
-            if (t > TIMES.MAP_LINKS) { 
-                mapIconBox.classList.add('visible'); 
-                mapTextBox.classList.add('visible'); 
-            } 
+            if (t > TIMES.MAP_LINKS) { mapIconBox.classList.add('visible'); mapTextBox.classList.add('visible'); } 
+            if (t > TIMES.RSVP_FORMS) { inputBox.classList.add('visible'); btnBox.classList.add('visible'); } 
 
-            if (t > TIMES.RSVP_FORMS) { 
-                inputBox.classList.add('visible'); 
-                btnBox.classList.add('visible'); 
-            } 
-
+            // End of Video
             if (t >= video.duration - 0.2 && !isFinished) {
                 isFinished = true;
+                isPlaying = false;
                 video.pause();
                 bgm.pause();
                 
-                // ONLY show footer and replay at the end. Do NOT hide boxes.
-                setTimeout(() => {
-                    replayBtn.classList.add('visible');
-                    footer.classList.add('visible');
-                }, 300);
+                // Keep boxes visible, just show footer and change icon to Replay
+                footer.classList.add('visible');
+                updateMediaIcon('rotate-ccw');
             }
         });
 
-        function replayVideo() {
-            isFinished = false;
-            replayBtn.classList.remove('visible');
-            footer.classList.remove('visible');
-            
-            // Hide elements before restarting
-            mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible');
-            inputBox.classList.remove('visible'); btnBox.classList.remove('visible');
-            
-            video.currentTime = 0;
-            bgm.currentTime = 0;
-            video.play();
-            bgm.play();
+        // 🟢 Top Right Glassy Button Logic
+        function toggleMedia() {
+            if (isFinished) {
+                // Replay
+                isFinished = false;
+                footer.classList.remove('visible');
+                video.currentTime = 0;
+                bgm.currentTime = 0;
+                
+                // Briefly hide UI elements so they can fade in again
+                mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible');
+                inputBox.classList.remove('visible'); btnBox.classList.remove('visible');
+                
+                video.play();
+                bgm.play();
+                isPlaying = true;
+                updateMediaIcon('pause');
+            } else {
+                // Play / Pause Toggle
+                if (isPlaying) {
+                    video.pause();
+                    bgm.pause();
+                    isPlaying = false;
+                    updateMediaIcon('play');
+                } else {
+                    video.play();
+                    bgm.play();
+                    isPlaying = true;
+                    updateMediaIcon('pause');
+                }
+            }
         }
 
-        // 🟢 HOLD TO PAUSE LOGIC
-        const pauseMedia = () => { if(!isFinished) { video.pause(); bgm.pause(); } };
-        const playMedia = () => { if(!isFinished) { video.play(); bgm.play(); } };
+        function updateMediaIcon(iconName) {
+            mediaIcon.setAttribute('data-lucide', iconName);
+            lucide.createIcons();
+        }
 
-        touchLayer.addEventListener('mousedown', pauseMedia);
-        touchLayer.addEventListener('mouseup', playMedia);
-        touchLayer.addEventListener('touchstart', pauseMedia, {passive: true});
-        touchLayer.addEventListener('touchend', playMedia);
-
+        // 🟢 Lock UI if already completed
         function checkAndLockUI() {
             if (guestData.rsvp === 'Attending' || guestData.rsvp === 'Not_Attending') {
                 rsvpBtn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i> Thank You!`;
@@ -289,6 +309,7 @@
             lucide.createIcons();
         }
 
+        // 🟢 Message Popup
         function openMessagePopup() {
             Swal.fire({
                 title: 'Leave a Wish',
@@ -305,8 +326,11 @@
             });
         }
 
+        // 🟢 RSVP Popup
         function openRSVPModal() {
             if (!guestId) { Swal.fire('Error', 'Invalid Link', 'warning'); return; }
+            
+            // Name will definitely show now!
             const displayName = `${guestData.title || ''} ${guestData.name}`;
 
             Swal.fire({
@@ -314,16 +338,16 @@
                 html: `
                     <div class="mb-5 mt-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
                         <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Invited Guest</p>
-                        <h4 class="text-lg font-bold text-blue-900">${displayName}</h4>
+                        <h4 class="text-lg font-bold" style="color: #1e3a8a !important;">${displayName}</h4>
                     </div>
                     <div class="flex flex-col gap-3 text-left">
                         <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
                             <input type="radio" name="rsvp_st" value="Attending" class="w-5 h-5 accent-emerald-600">
-                            <span class="font-medium text-slate-700">Yes, I will attend</span>
+                            <span class="font-medium">Yes, I will attend</span>
                         </label>
                         <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
                             <input type="radio" name="rsvp_st" value="Not_Attending" class="w-5 h-5 accent-rose-600">
-                            <span class="font-medium text-slate-700">Sorry, I can't make it</span>
+                            <span class="font-medium">Sorry, I can't make it</span>
                         </label>
                     </div>
                 `,
@@ -339,6 +363,7 @@
             });
         }
 
+        // 🟢 Inline Loading (Direct UI Update)
         async function sendInlineData(type, val) {
             const params = new URLSearchParams({ action: 'updateRSVP', id: guestId });
             params.append(type === 'message' ? 'message' : 'rsvp', val);
