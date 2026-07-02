@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Amaya's Oaths Party</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body, html {
+            margin: 0; padding: 0; background-color: #000; 
+            font-family: 'Inter', sans-serif; overflow: hidden;
+            touch-action: none; -webkit-touch-callout: none; user-select: none;
+        }
+
+        #loader {
+            position: fixed; inset: 0; background: #f8fafc; z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease;
+        }
+
+        #invitation-viewport {
+            position: relative; width: 100%; max-width: 450px; height: 100vh; 
+            height: 100dvh; margin: 0 auto; background-color: #000; overflow: hidden;
+        }
+
+        #main-video { 
+            width: 100%; height: 100%; object-fit: cover; object-position: center; 
+            pointer-events: none; 
+        }
+
+        #touch-layer { position: absolute; inset: 0; z-index: 10; cursor: pointer; }
+
+        .overlay-box {
+            position: absolute; opacity: 0; pointer-events: none;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: translateY(20px); z-index: 50;
+        }
+        .overlay-box.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+        #rsvp-input-container { top: 58%; left: 7.5%; width: 85%; height: 10%; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px);
+            border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%; height: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.8);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .msg-text { font-size: 0.95rem; color: #475569; font-weight: 500; }
+
+        #rsvp-btn-container { top: 71%; left: 20%; width: 60%; height: 6.5%; }
+        #rsvp-btn {
+            width: 100%; height: 100%; background-color: #0c2b5e; color: white;
+            border: none; border-radius: 50px; font-weight: 600; font-size: 0.95rem;
+            cursor: pointer; transition: all 0.3s; box-shadow: 0 6px 20px rgba(12, 43, 94, 0.3);
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        #rsvp-btn:active { transform: scale(0.96); }
+
+        #map-icon-link { top: 35%; left: 70%; width: 18%; height: 8%; }
+        #map-text-link { top: 45%; left: 15%; width: 70%; height: 6%; }
+        .map-anchor { display: block; width: 100%; height: 100%; cursor: pointer; }
+        
+        #footer-container {
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            width: 80%; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.9); 
+            z-index: 60; font-weight: 600; padding: 10px; border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1);
+            opacity: 0; pointer-events: none; transition: opacity 0.8s ease;
+        }
+        #footer-container.visible { opacity: 1; pointer-events: auto; }
+        #footer-container a { color: #93c5fd; text-decoration: none; font-weight: 700;}
+
+        #control-btn {
+            position: absolute; top: 20px; right: 20px; z-index: 100;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+            color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; 
+            width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s ease; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        #control-btn.visible { opacity: 1; pointer-events: auto; }
+
+        .swal2-popup { background: #ffffff !important; color: #1e293b !important; border-radius: 20px !important; }
+        .swal2-title { color: #0f172a !important; }
+        .custom-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 10px; outline: none; transition: border 0.3s; }
+        .custom-input:focus { border-color: #3b82f6; }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div id="loading-animation">
+            <div class="w-24 h-48 bg-slate-200 rounded-lg mb-8 opacity-50 animate-pulse mx-auto"></div>
+            <p class="text-slate-500 font-medium text-sm flex items-center justify-center gap-2">
+                <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Preparing Invitation...
+            </p>
+        </div>
+        <div id="scroll-hint" class="hidden flex-col items-center animate-bounce text-slate-800 mt-10 transition-opacity duration-300">
+            <span class="text-xs font-bold mb-1 tracking-widest uppercase">Tap to View</span>
+            <i data-lucide="chevron-up" class="w-6 h-6"></i>
+        </div>
+    </div>
+
+    <div id="invitation-viewport">
+        
+        <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback"></video>
+        <audio id="bgm" src="song.mp3" loop></audio>
+
+        <div id="touch-layer"></div>
+
+        <button id="control-btn" onclick="toggleMedia()"><i data-lucide="pause" id="control-icon" class="w-5 h-5"></i></button>
+
+        <div id="map-icon-link" class="overlay-box">
+            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="map-anchor"></a>
+        </div>
+        <div id="map-text-link" class="overlay-box">
+            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="map-anchor"></a>
+        </div>
+
+        <div id="rsvp-input-container" class="overlay-box" onclick="openGroupMessagePopup()">
+            <div class="glass-panel" id="msg-panel">
+                <span class="msg-text" id="msg-display">Tap to leave a wish...</span>
+            </div>
+        </div>
+
+        <!-- Call RSVP Button -->
+        <div id="rsvp-btn-container" class="overlay-box">
+            <button id="rsvp-btn" onclick="window.location.href='tel:+94762260519'">
+                <i data-lucide="phone-call" class="w-4 h-4"></i> RSVP (Call)
+            </button>
+        </div>
+
+        <div id="footer-container">
+            Powered by <a href="https://www.facebook.com/sandu.malli2/" target="_blank">CRAFTGRID</a><br>
+            © 2026 All Right Reserved | Sandusha Avishkha
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const TIMES = {
+            MAP_LINKS: 4.2,   
+            RSVP_FORMS: 8.5   
+        };
+
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi0Nti2-5JTLZ_7LI5d1ROB0JHO7wkVHWJ4Vm5fHrQPxa8ubE9HAJNwLEaNY9M3gGszA/exec';
+        
+        const video = document.getElementById('main-video');
+        const bgm = document.getElementById('bgm');
+        const loader = document.getElementById('loader');
+        const loadingAnim = document.getElementById('loading-animation');
+        const scrollHint = document.getElementById('scroll-hint');
+        const touchLayer = document.getElementById('touch-layer');
+        
+        const mapIconBox = document.getElementById('map-icon-link');
+        const mapTextBox = document.getElementById('map-text-link');
+        const inputBox = document.getElementById('rsvp-input-container');
+        const btnBox = document.getElementById('rsvp-btn-container');
+        const footer = document.getElementById('footer-container');
+        
+        const controlBtn = document.getElementById('control-btn');
+        const controlIcon = document.getElementById('control-icon');
+        const msgDisplay = document.getElementById('msg-display');
+        
+        let isFinished = false;
+        let isPlaying = false;
+        let messageSent = false;
+
+        window.addEventListener('load', () => {
+            video.addEventListener('canplaythrough', () => {
+                setTimeout(() => {
+                    loadingAnim.style.display = 'none';
+                    scrollHint.classList.remove('hidden');
+                    scrollHint.style.display = 'flex';
+                }, 1000);
+            });
+            video.load();
+        });
+
+        const startApp = () => {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                video.play(); bgm.play();
+                isPlaying = true;
+                controlBtn.classList.add('visible');
+            }, 500);
+            
+            // Remove the start listener so it doesn't trigger again
+            document.removeEventListener('mousedown', startApp);
+            document.removeEventListener('touchstart', startApp);
+        };
+
+        document.addEventListener('mousedown', startApp);
+        document.addEventListener('touchstart', startApp, {passive: true});
+
+        video.addEventListener('timeupdate', () => {
+            const t = video.currentTime;
+
+            if (t > TIMES.MAP_LINKS) { mapIconBox.classList.add('visible'); mapTextBox.classList.add('visible'); } 
+            if (t > TIMES.RSVP_FORMS) { inputBox.classList.add('visible'); btnBox.classList.add('visible'); } 
+
+            if (t >= video.duration - 0.2 && !isFinished) {
+                isFinished = true;
+                isPlaying = false;
+                video.pause(); bgm.pause();
+                
+                updateControlIcon('rotate-ccw'); // Change to replay icon
+                setTimeout(() => footer.classList.add('visible'), 300);
+            }
+        });
+
+        function toggleMedia() {
+            if (isFinished) {
+                // Replay
+                isFinished = false;
+                footer.classList.remove('visible');
+                mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible');
+                inputBox.classList.remove('visible'); btnBox.classList.remove('visible');
+                
+                video.currentTime = 0; bgm.currentTime = 0;
+                video.play(); bgm.play();
+                isPlaying = true;
+                updateControlIcon('pause');
+            } else {
+                if (isPlaying) { video.pause(); bgm.pause(); isPlaying = false; updateControlIcon('play'); } 
+                else { video.play(); bgm.play(); isPlaying = true; updateControlIcon('pause'); }
+            }
+        }
+
+        function updateControlIcon(icon) {
+            controlIcon.setAttribute('data-lucide', icon);
+            lucide.createIcons();
+        }
+
+        // 🟢 New Feature: Group Message Popup (Name + Message)
+        function openGroupMessagePopup() {
+            if (messageSent) return;
+
+            Swal.fire({
+                title: 'Leave a Wish',
+                html: `
+                    <input id="swal-input-name" class="custom-input" placeholder="Your Name (e.g. Nimal)" required>
+                    <textarea id="swal-input-msg" class="custom-input" rows="3" placeholder="Type your message here..." required></textarea>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Send',
+                confirmButtonColor: '#0c2b5e',
+                customClass: { popup: 'swal2-popup' },
+                preConfirm: () => {
+                    const name = document.getElementById('swal-input-name').value.trim();
+                    const msg = document.getElementById('swal-input-msg').value.trim();
+                    if (!name || !msg) { Swal.showValidationMessage('Please enter both name and message'); return false; }
+                    return { name: name, message: msg };
+                }
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    sendGroupData(res.value.name, res.value.message);
+                }
+            });
+        }
+
+        async function sendGroupData(name, msg) {
+            msgDisplay.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> Sending...`;
+            msgDisplay.style.color = '#0c2b5e';
+            lucide.createIcons();
+
+            const params = new URLSearchParams({ 
+                action: 'addGroupMessage', 
+                name: name, 
+                message: msg 
+            });
+
+            try {
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
+                
+                // Success UI
+                messageSent = true;
+                msgDisplay.innerHTML = `<span class="text-emerald-700 font-bold"><i data-lucide="check" class="w-4 h-4 inline"></i> Message Sent!</span>`;
+                document.getElementById('rsvp-input-container').style.pointerEvents = 'none';
+                lucide.createIcons();
+            } catch(e) {
+                msgDisplay.innerHTML = `Try again...`;
+                Swal.fire('Error', 'Please try again', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
