@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Amaya's Oaths Party</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts & SweetAlert & Lucide Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,193 +13,176 @@
     <style>
         body, html {
             margin: 0; padding: 0; background-color: #000; 
-            font-family: 'Inter', sans-serif; overflow: hidden; height: 100%; width: 100%;
+            font-family: 'Inter', sans-serif; overflow: hidden; /* No scrolling at all! */
+            touch-action: none; /* Prevents pull-to-refresh on mobile */
         }
 
-        /* Initial Loader */
         #loader {
-            position: fixed; inset: 0; background: #e5dfd3; z-index: 9999;
+            position: fixed; inset: 0; background: #f8fafc; z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 0.8s ease;
         }
 
-        /* Perfect 9:16 Video Container */
-        #media-container {
-            position: relative;
-            background-color: #000;
-            margin: 0 auto;
+        #invitation-viewport {
+            position: relative; width: 100%; max-width: 450px; height: 100vh; 
+            height: 100dvh; /* Dynamic viewport for modern mobiles */
+            margin: 0 auto; background-color: #000; overflow: hidden;
         }
 
-        #main-video {
-            width: 100%; height: 100%; object-fit: contain;
-        }
+        /* Object-fit cover ensures NO white borders and NO text cropping if balanced right */
+        #main-video { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 
-        /* Dynamic Overlay Elements */
         .overlay-box {
             position: absolute; opacity: 0; pointer-events: none;
-            transition: opacity 0.5s ease, transform 0.5s ease;
-            transform: translateY(15px); z-index: 50;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: translateY(20px); z-index: 50;
         }
         .overlay-box.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
-        /* Custom HTML UI for Input & Button */
-        #rsvp-input-container { top: 57%; left: 12%; width: 76%; height: 16%; }
+        /* Custom HTML UI */
+        #rsvp-input-container { top: 58%; left: 7.5%; width: 85%; height: 10%; }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);
-            border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 100%; height: 100%; padding: 15px; border: 1px solid rgba(255,255,255,0.6);
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px);
+            border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            width: 100%; height: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.5);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
-        #rsvp-message {
-            width: 100%; height: 100%; background: transparent; border: none; outline: none;
-            font-size: 0.95rem; color: #1e293b; text-align: center; resize: none; font-weight: 500;
-        }
-        #rsvp-message::placeholder { color: #94a3b8; font-style: italic; }
+        .msg-text { font-size: 0.9rem; color: #64748b; font-style: italic; font-weight: 500; }
 
-        #rsvp-btn-container { top: 76%; left: 15%; width: 70%; height: 6%; }
+        #rsvp-btn-container { top: 71%; left: 20%; width: 60%; height: 6.5%; }
         #rsvp-btn {
-            width: 100%; height: 100%; background-color: #1e3a8a; color: white;
-            border: none; border-radius: 50px; font-weight: 600; font-size: 1rem;
-            cursor: pointer; transition: all 0.3s; box-shadow: 0 6px 20px rgba(30, 58, 138, 0.5);
+            width: 100%; height: 100%; background-color: #0c2b5e; color: white;
+            border: none; border-radius: 50px; font-weight: 600; font-size: 0.95rem;
+            cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(12, 43, 94, 0.4);
             display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         #rsvp-btn:active { transform: scale(0.96); }
-        #rsvp-btn:disabled { cursor: not-allowed; transform: none; background-color: #059669; }
+        #rsvp-btn:disabled { cursor: not-allowed; transform: none; }
 
         /* Map Links */
-        #map-icon-link { top: 43.5%; left: 63%; width: 14%; height: 6%; }
-        #map-text-link { top: 51%; left: 15%; width: 70%; height: 5%; }
+        #map-icon-link { top: 38%; left: 70%; width: 18%; height: 7%; cursor: pointer; }
+        #map-text-link { top: 46%; left: 15%; width: 70%; height: 6%; cursor: pointer; }
         
-        /* Edit Mode Styles */
-        .edit-mode .overlay-box { border: 2px dashed #3b82f6 !important; background: rgba(59, 130, 246, 0.2); cursor: move; opacity: 0.9 !important; pointer-events: auto !important; }
-        #editor-hud { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); color: #38bdf8; padding: 15px; font-family: monospace; font-size: 11px; z-index: 9000; display: none; }
+        /* Blur Box Watermark */
+        #footer-container {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 85%; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.9); 
+            z-index: 60; font-weight: 600; padding: 10px; border-radius: 12px;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+            opacity: 0; pointer-events: none; transition: opacity 0.8s ease;
+        }
+        #footer-container.visible { opacity: 1; pointer-events: auto; }
+        #footer-container a { color: #93c5fd; text-decoration: none; font-weight: 700;}
+
+        /* Replay Button */
+        #replay-btn {
+            position: absolute; top: 20px; right: 20px; z-index: 100;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
+            color: white; border: none; border-radius: 50%; width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s ease; cursor: pointer;
+        }
+        #replay-btn.visible { opacity: 1; pointer-events: auto; }
+
+        /* Open Button */
+        #open-btn {
+            background: #0c2b5e; color: white; padding: 12px 30px; border-radius: 50px;
+            font-weight: 600; margin-top: 30px; opacity: 0; transform: scale(0.9);
+            transition: all 0.5s; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(12, 43, 94, 0.3);
+        }
+        #open-btn.ready { opacity: 1; transform: scale(1); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(12,43,94,0.4); } 70% { box-shadow: 0 0 0 15px rgba(12,43,94,0); } 100% { box-shadow: 0 0 0 0 rgba(12,43,94,0); } }
+
+        /* Force Light Theme in Swal */
+        .swal2-popup { background: #ffffff !important; color: #1e293b !important; border-radius: 20px !important; }
+        .swal2-title { color: #0f172a !important; }
     </style>
 </head>
-<body class="flex items-center justify-center">
+<body>
 
-    <!-- Loading Skeleton -->
+    <!-- Loader & Start Button (Required by browsers to auto-play Audio) -->
     <div id="loader">
-        <div class="w-32 h-64 bg-slate-300 rounded-lg mb-8 opacity-50 animate-pulse"></div>
-        <div class="w-3/4 h-6 bg-slate-300 rounded mb-4 opacity-50 animate-pulse"></div>
-        <div class="w-1/2 h-4 bg-slate-300 rounded mb-12 opacity-50 animate-pulse"></div>
-        <p class="text-slate-600 font-semibold mt-6 text-sm flex items-center gap-2">
-            <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Preparing Invitation...
-        </p>
+        <div id="loading-animation">
+            <div class="w-24 h-48 bg-slate-200 rounded-lg mb-8 opacity-50 animate-pulse mx-auto"></div>
+            <p class="text-slate-500 font-medium text-sm flex items-center justify-center gap-2">
+                <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Preparing Invitation...
+            </p>
+        </div>
+        <button id="open-btn" onclick="startExperience()" style="display: none;">
+            <i data-lucide="mail-open" class="w-5 h-5"></i> Tap to Open Invitation
+        </button>
     </div>
 
-    <!-- Main App Container -->
-    <div id="media-container">
+    <!-- Main Viewport -->
+    <div id="invitation-viewport">
         
-        <!-- වීඩියෝ එකේ Loop එක අයින් කරා. එක පාරයි ප්ලේ වෙන්නේ. -->
-        <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline muted></video>
+        <!-- Video & Audio -->
+        <video id="main-video" src="Comp 1.mp4" playsinline webkit-playsinline></video>
+        <!-- 🔴 BGM සින්දුව මෙතනින් මාරු කරන්න -->
+        <audio id="bgm" src="song.mp3" loop></audio>
 
-        <!-- Touch layer for Play/Pause -->
-        <div id="touch-layer" class="absolute inset-0 z-10 cursor-pointer" title="Tap to Pause/Play"></div>
+        <!-- Replay Button -->
+        <button id="replay-btn" onclick="replayVideo()"><i data-lucide="rotate-ccw" class="w-6 h-6"></i></button>
 
-        <!-- Pause Indicator (Shows when video is paused) -->
-        <div id="pause-indicator" class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300">
-            <div class="bg-black/60 p-5 rounded-full backdrop-blur-md shadow-2xl">
-                <i data-lucide="pause" class="w-12 h-12 text-white"></i>
+        <!-- 🔴 මැප් ලින්ක් දෙක මෙතනින් දාන්න -->
+        <div id="map-icon-link" class="overlay-box click-area" onclick="window.open('https://maps.app.goo.gl/amWMheWCpM67DzFR8', '_blank')"></div>
+        <div id="map-text-link" class="overlay-box click-area" onclick="window.open('https://maps.app.goo.gl/amWMheWCpM67DzFR8', '_blank')"></div>
+
+        <!-- HTML Message Box -->
+        <div id="rsvp-input-container" class="overlay-box click-area" onclick="openMessagePopup()">
+            <div class="glass-panel" id="msg-panel">
+                <span class="msg-text" id="msg-display">Tap to add a wish...</span>
             </div>
         </div>
 
-        <!-- Replay Button (Hidden initially, shows after video ends) -->
-        <button id="replay-btn" onclick="replayVideo()" class="absolute top-5 right-5 z-40 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur-md border border-white/20 shadow-xl transition-all active:scale-90 opacity-0 pointer-events-none duration-500" title="Replay Video">
-            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-        </button>
-
-        <!-- Map Links -->
-        <div id="map-icon-link" class="overlay-box z-30">
-            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="block w-full h-full cursor-pointer relative z-50"></a>
-        </div>
-        <div id="map-text-link" class="overlay-box z-30">
-            <a href="https://maps.app.goo.gl/amWMheWCpM67DzFR8" target="_blank" class="block w-full h-full cursor-pointer relative z-50"></a>
-        </div>
-
-        <!-- Custom Message Box -->
-        <div id="rsvp-input-container" class="overlay-box z-30">
-            <div class="glass-panel">
-                <textarea id="rsvp-message" placeholder="Add any text or wish... (Press Enter)"></textarea>
-            </div>
-        </div>
-
-        <!-- RSVP Button -->
-        <div id="rsvp-btn-container" class="overlay-box z-30">
+        <!-- HTML RSVP Button -->
+        <div id="rsvp-btn-container" class="overlay-box click-area">
             <button id="rsvp-btn" onclick="openRSVPModal()">RSVP</button>
         </div>
 
-        <!-- Watermark Blur Box (Hidden initially, shows after video ends) -->
-        <div id="footer-container" class="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 w-[85%] text-center bg-black/60 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-2xl opacity-0 pointer-events-none transition-all duration-700">
-            <span class="text-white/90 text-[10px] sm:text-xs font-medium tracking-wide">
-                Powered by <a href="https://www.facebook.com/sandu.malli2/" target="_blank" class="text-blue-400 font-bold hover:text-blue-300 transition-colors">CRAFTGRID</a><br>
-                <span class="mt-1 block opacity-70">© 2026 All Rights Reserved | Sandusha Avishkha</span>
-            </span>
+        <!-- Footer Watermark (Blur Box) -->
+        <div id="footer-container">
+            Powered by <a href="https://www.facebook.com/sandu.malli2/" target="_blank">CRAFTGRID</a><br>
+            © 2026 All Right Reserved | Sandusha Avishkha
         </div>
 
-    </div>
-
-    <!-- Editor HUD -->
-    <div id="editor-hud">
-        <div class="flex justify-between items-center mb-2">
-            <strong class="text-white text-xs">🔴 LAYOUT DESIGN MODE</strong>
-            <button onclick="copyLayoutCSS()" class="bg-blue-600 px-3 py-1 rounded text-white font-bold">Copy CSS</button>
-        </div>
-        <pre id="hud-css-output" class="text-emerald-400"></pre>
     </div>
 
     <script>
         lucide.createIcons();
 
-        // Constants
+        // =========================================================================
+        // 🔴 මෙතනින් ඔයාට ඕන විදිහට වෙලාවල් (තත්පර වලින්) අඩු වැඩි කරන්න පුළුවන් 
+        // =========================================================================
+        const TIMES = {
+            MAP_LINKS: 4.2,   // මැප් අයිකන් සහ හෝටල් නම පෙන්නන වෙලාව
+            RSVP_FORMS: 8.5   // RSVP බටන් එකයි Message එකයි පෙන්නන වෙලාව
+        };
+        // =========================================================================
+
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi0Nti2-5JTLZ_7LI5d1ROB0JHO7wkVHWJ4Vm5fHrQPxa8ubE9HAJNwLEaNY9M3gGszA/exec';
         
-        // Elements
         const video = document.getElementById('main-video');
+        const bgm = document.getElementById('bgm');
         const loader = document.getElementById('loader');
-        const mediaContainer = document.getElementById('media-container');
-        const touchLayer = document.getElementById('touch-layer');
-        const pauseIndicator = document.getElementById('pause-indicator');
-        const replayBtn = document.getElementById('replay-btn');
-        const footerContainer = document.getElementById('footer-container');
+        const openBtn = document.getElementById('open-btn');
+        const loadingAnim = document.getElementById('loading-animation');
         
         const mapIconBox = document.getElementById('map-icon-link');
         const mapTextBox = document.getElementById('map-text-link');
         const inputBox = document.getElementById('rsvp-input-container');
         const btnBox = document.getElementById('rsvp-btn-container');
-        const msgInput = document.getElementById('rsvp-message');
+        const footer = document.getElementById('footer-container');
+        const replayBtn = document.getElementById('replay-btn');
+        
+        const msgDisplay = document.getElementById('msg-display');
         const rsvpBtn = document.getElementById('rsvp-btn');
         
         let guestId = '';
         let guestData = { name: 'Valued Guest', rsvp: 'Pending', message: '' };
-        const isEditMode = new URLSearchParams(window.location.search).get('edit') === 'true';
+        let isFinished = false;
 
-        // --- 1. Perfect Screen Sizing Logic ---
-        function fitVideoContainer() {
-            const windowW = window.innerWidth;
-            const windowH = window.innerHeight;
-            const videoRatio = 9 / 16;
-            
-            let targetW, targetH;
-            
-            if (windowW / windowH > videoRatio) {
-                targetH = windowH;
-                targetW = targetH * videoRatio;
-            } else {
-                targetW = windowW;
-                targetH = targetW / videoRatio;
-            }
-
-            if (targetW > 450) {
-                targetW = 450;
-                targetH = targetW / videoRatio;
-            }
-
-            mediaContainer.style.width = targetW + 'px';
-            mediaContainer.style.height = targetH + 'px';
-        }
-        window.addEventListener('resize', fitVideoContainer);
-        fitVideoContainer();
-
-        // --- 2. Initial Setup & Data Fetch ---
         window.addEventListener('load', async () => {
             guestId = new URLSearchParams(window.location.search).get('id');
 
@@ -215,187 +195,185 @@
                         checkAndLockUI();
                         fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'markOpened', id: guestId }) });
                     }
-                } catch(e) { console.log("Guest fetch error"); }
+                } catch(e) {}
             }
 
+            // Show Open Button when media is ready
             video.addEventListener('canplaythrough', () => {
                 setTimeout(() => {
-                    loader.style.opacity = '0';
-                    video.play().catch(e => console.log("Autoplay blocked"));
-                    setTimeout(() => loader.style.display = 'none', 800);
+                    loadingAnim.style.display = 'none';
+                    openBtn.style.display = 'flex';
+                    setTimeout(() => openBtn.classList.add('ready'), 50);
                 }, 1000);
             });
             video.load();
         });
 
-        // --- 3. Playback Controls ---
-        touchLayer.addEventListener('click', () => {
-            if (video.ended) return; // වීඩියෝ එක ඉවර නම් ටච් කරාට ප්ලේ වෙන්නේ නෑ
-            
-            if(video.paused) {
+        // 🟢 Start Experience
+        function startExperience() {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
                 video.play();
-                pauseIndicator.style.opacity = '0';
-            } else {
-                video.pause();
-                pauseIndicator.style.opacity = '1';
-            }
-        });
-
-        // වීඩියෝ එක ඉවර වුණාම Footer එකයි Replay බටන් එකයි පෙන්නනවා
-        video.addEventListener('ended', () => {
-            replayBtn.classList.remove('opacity-0', 'pointer-events-none');
-            footerContainer.classList.remove('opacity-0', 'pointer-events-none');
-            pauseIndicator.style.opacity = '0';
-        });
-
-        function replayVideo() {
-            replayBtn.classList.add('opacity-0', 'pointer-events-none');
-            footerContainer.classList.add('opacity-0', 'pointer-events-none');
-            video.currentTime = 0;
-            video.play();
+                bgm.play();
+            }, 800);
         }
 
-        // --- 4. Timed Overlays (🔴 මෙතනින් ටයිම් වෙනස් කරන්න) ---
+        // 🟢 Video Timeline Logic
         video.addEventListener('timeupdate', () => {
             const t = video.currentTime;
-            if(isEditMode) return; 
 
-            // ==============================================================
-            // 🔴 MAP LINKS පෙන්නන වෙලාව
-            const mapAppearTime = 4.5;
-            const mapHideTime = 11.5;
-            
-            if (t > mapAppearTime && t < mapHideTime) {
-                mapIconBox.classList.add('visible'); mapTextBox.classList.add('visible');
-            } else {
-                mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible');
-            }
+            if (t > TIMES.MAP_LINKS && !isFinished) { mapIconBox.classList.add('visible'); mapTextBox.classList.add('visible'); } 
+            else { mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible'); }
 
-            // 🔴 RSVP & TEXT BOX පෙන්නන වෙලාව (දැනට තත්පර 10.5 දීලා තියෙන්නේ)
-            // මේක 11.0 වගේ කරලා තව පරක්කු කරන්න පුළුවන්
-            const rsvpAppearTime = 10.5;
-            
-            if (t > rsvpAppearTime) {
-                inputBox.classList.add('visible'); btnBox.classList.add('visible');
-            } else {
+            if (t > TIMES.RSVP_FORMS && !isFinished) { inputBox.classList.add('visible'); btnBox.classList.add('visible'); } 
+            else { inputBox.classList.remove('visible'); btnBox.classList.remove('visible'); }
+
+            // End of Video
+            if (t >= video.duration - 0.2 && !isFinished) {
+                isFinished = true;
+                video.pause();
+                bgm.pause();
+                
+                // Hide inputs, show replay & watermark
                 inputBox.classList.remove('visible'); btnBox.classList.remove('visible');
+                mapIconBox.classList.remove('visible'); mapTextBox.classList.remove('visible');
+                
+                setTimeout(() => {
+                    replayBtn.classList.add('visible');
+                    footer.classList.add('visible');
+                }, 500);
             }
-            // ==============================================================
         });
 
-        // --- 5. UI Logic & Sheet Sync ---
+        // 🟢 Replay Logic
+        function replayVideo() {
+            isFinished = false;
+            replayBtn.classList.remove('visible');
+            footer.classList.remove('visible');
+            video.currentTime = 0;
+            bgm.currentTime = 0;
+            video.play();
+            bgm.play();
+        }
+
+        // 🟢 HOLD TO PAUSE LOGIC (No Icons)
+        const viewport = document.getElementById('invitation-viewport');
+        const pauseMedia = (e) => {
+            if(e.target.closest('.click-area') || isFinished) return; // Ignore if clicking buttons
+            video.pause(); bgm.pause();
+        };
+        const playMedia = (e) => {
+            if(e.target.closest('.click-area') || isFinished) return;
+            video.play(); bgm.play();
+        };
+
+        // Touch & Mouse events for pausing
+        viewport.addEventListener('mousedown', pauseMedia);
+        viewport.addEventListener('mouseup', playMedia);
+        viewport.addEventListener('touchstart', pauseMedia, {passive: true});
+        viewport.addEventListener('touchend', playMedia);
+
+        // 🟢 Lock UI if already completed
         function checkAndLockUI() {
             if (guestData.rsvp === 'Attending' || guestData.rsvp === 'Not_Attending') {
                 rsvpBtn.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i> Thank You!`;
+                rsvpBtn.className = "w-full h-full bg-emerald-600 text-white border-none rounded-full font-bold text-[0.95rem] flex justify-center items-center gap-2 shadow-lg";
                 rsvpBtn.disabled = true;
-                lucide.createIcons();
+                rsvpBtn.parentElement.style.pointerEvents = 'none';
             }
             if (guestData.message && guestData.message.trim() !== '') {
-                msgInput.value = "Your message has been sent!";
-                msgInput.disabled = true;
-                msgInput.style.color = "#047857"; 
-                msgInput.style.fontWeight = "600";
+                msgDisplay.innerHTML = `<span class="text-emerald-700 font-bold"><i data-lucide="check" class="w-4 h-4 inline"></i> Message Sent</span>`;
+                document.getElementById('rsvp-input-container').style.pointerEvents = 'none';
             }
+            lucide.createIcons();
         }
 
-        msgInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault(); 
-                if (this.value.trim() !== '') sendRSVPData('message', this.value.trim());
-            }
-        });
+        // 🟢 Inline Loading Message Popup
+        function openMessagePopup() {
+            Swal.fire({
+                title: 'Leave a Wish',
+                input: 'textarea',
+                inputPlaceholder: 'Type your message here...',
+                showCancelButton: true,
+                confirmButtonText: 'Send Message',
+                confirmButtonColor: '#0c2b5e',
+                customClass: { popup: 'swal2-popup' }
+            }).then((res) => {
+                if (res.isConfirmed && res.value.trim() !== '') {
+                    sendInlineData('message', res.value.trim());
+                }
+            });
+        }
 
+        // 🟢 Inline Loading RSVP Popup (Light Theme & Shows Name)
         function openRSVPModal() {
-            if (!guestId) {
-                Swal.fire({ icon: 'warning', title: 'Invalid Link', text: 'Please open using a valid invitation link.' });
-                return;
-            }
+            if (!guestId) { Swal.fire('Error', 'Invalid Link', 'warning'); return; }
             
-            // 🔴 අලුත් Light Theme Popup එක සහ නම
-            const displayName = guestData.name !== 'Valued Guest' ? `${guestData.title || ''} ${guestData.name}` : 'Valued Guest';
+            const displayName = `${guestData.title || ''} ${guestData.name}`;
 
             Swal.fire({
-                title: '<h2 class="text-2xl font-bold text-slate-800">RSVP Confirmation</h2>',
-                background: '#ffffff', // Light background
-                color: '#1e293b',
+                title: 'RSVP Confirmation',
                 html: `
-                    <div class="mb-6 mt-2 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-inner">
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-semibold">Invited Guest</p>
-                        <h4 class="text-xl font-bold text-blue-600">${displayName}</h4>
+                    <div class="mb-5 mt-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Invited Guest</p>
+                        <h4 class="text-lg font-bold text-blue-900">${displayName}</h4>
                     </div>
                     <div class="flex flex-col gap-3 text-left">
-                        <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                        <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
                             <input type="radio" name="rsvp_st" value="Attending" class="w-5 h-5 accent-emerald-600">
                             <span class="font-medium text-slate-700">Yes, I will attend</span>
                         </label>
-                        <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+                        <label class="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
                             <input type="radio" name="rsvp_st" value="Not_Attending" class="w-5 h-5 accent-rose-600">
                             <span class="font-medium text-slate-700">Sorry, I can't make it</span>
                         </label>
                     </div>
                 `,
-                showCancelButton: true, confirmButtonText: 'Submit Response', confirmButtonColor: '#0f172a', cancelButtonColor: '#94a3b8',
+                showCancelButton: true, confirmButtonText: 'Submit', confirmButtonColor: '#0c2b5e',
+                customClass: { popup: 'swal2-popup' },
                 preConfirm: () => {
                     const sel = document.querySelector('input[name="rsvp_st"]:checked');
                     if (!sel) { Swal.showValidationMessage('Please select an option'); return false; }
                     return sel.value;
                 }
             }).then((res) => {
-                if (res.isConfirmed) sendRSVPData('rsvp', res.value);
+                if (res.isConfirmed) sendInlineData('rsvp', res.value);
             });
         }
 
-        async function sendRSVPData(type, val) {
-            Swal.fire({ title: 'Updating...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        // 🟢 Inline Fetch Logic (No popup for loading)
+        async function sendInlineData(type, val) {
             const params = new URLSearchParams({ action: 'updateRSVP', id: guestId });
             params.append(type === 'message' ? 'message' : 'rsvp', val);
 
+            // Set Loading UI on the specific element
+            if (type === 'message') {
+                msgDisplay.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> Sending...`;
+                msgDisplay.style.color = '#0c2b5e';
+            } else {
+                const originalBtn = rsvpBtn.innerHTML;
+                rsvpBtn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin inline"></i> Updating...`;
+                rsvpBtn.disabled = true;
+            }
+            lucide.createIcons();
+
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
+                
+                // Update local state and lock UI
                 if (type === 'message') guestData.message = val;
                 if (type === 'rsvp') guestData.rsvp = val;
-                checkAndLockUI();
+                
+                // Slight delay for animation feel
+                setTimeout(() => checkAndLockUI(), 500);
 
-                Swal.fire({
-                    icon: 'success', title: 'Thank You!',
-                    text: type === 'message' ? 'Your message has been sent successfully.' : 'Your RSVP status has been updated.',
-                    confirmButtonColor: '#059669'
-                });
             } catch(e) {
-                Swal.fire({ icon: 'error', title: 'Failed', text: 'Please try again.' });
+                // Revert on error
+                if (type === 'message') msgDisplay.innerHTML = `Try again...`;
+                else { rsvpBtn.innerHTML = 'RSVP'; rsvpBtn.disabled = false; }
+                Swal.fire('Error', 'Please try again', 'error');
             }
-        }
-
-        // --- 6. Drag & Drop Edit Mode ---
-        if (isEditMode) {
-            document.body.classList.add('edit-mode');
-            document.getElementById('editor-hud').style.display = 'block';
-            [mapIconBox, mapTextBox, inputBox, btnBox].forEach(box => {
-                box.classList.add('visible');
-                box.addEventListener('mousedown', (e) => {
-                    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
-                    let selectedEl = box;
-                    const rect = box.parentElement.getBoundingClientRect();
-                    const onMouseMove = (moveEvent) => {
-                        selectedEl.style.left = (((moveEvent.clientX - rect.left) / rect.width) * 100).toFixed(1) + '%';
-                        selectedEl.style.top = (((moveEvent.clientY - rect.top) / rect.height) * 100).toFixed(1) + '%';
-                        updateCSS();
-                    };
-                    const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
-                    window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp);
-                });
-            });
-            function updateCSS() {
-                document.getElementById('hud-css-output').innerText = 
-`#rsvp-input-container { top: ${inputBox.style.top || '57%'}; left: ${inputBox.style.left || '12%'}; }
-#rsvp-btn-container { top: ${btnBox.style.top || '76%'}; left: ${btnBox.style.left || '15%'}; }
-#map-icon-link { top: ${mapIconBox.style.top || '43.5%'}; left: ${mapIconBox.style.left || '63%'}; }
-#map-text-link { top: ${mapTextBox.style.top || '51%'}; left: ${mapTextBox.style.left || '15%'}; }`;
-            }
-            updateCSS();
-        }
-        function copyLayoutCSS() {
-            navigator.clipboard.writeText(document.getElementById('hud-css-output').innerText).then(() => alert("Copied!"));
         }
     </script>
 </body>
